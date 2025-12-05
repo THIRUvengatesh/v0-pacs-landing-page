@@ -9,27 +9,34 @@ export default async function AdminPACSPage({ params }: { params: Promise<{ slug
 
   const session = await getSession()
 
+  console.log("[v0] Admin PACS Page - Session:", session)
+
   if (!session) {
     redirect("/auth/login")
   }
 
-  // Get PACS by slug
   const { data: pacs, error: pacsError } = await supabase.from("pacs").select("*").eq("slug", slug).single()
 
+  console.log("[v0] PACS lookup:", { pacs, pacsError, slug })
+
   if (pacsError || !pacs) {
+    console.error("[v0] PACS not found or error:", pacsError)
     redirect("/admin")
   }
 
-  const { data: pacsUser, error: accessError } = await supabase
-    .from("pacs_users")
+  const { data: assignment, error: accessError } = await supabase
+    .from("user_pacs_assignments")
     .select("*")
     .eq("user_id", session.userId)
-    .eq("pacs_id", pacs.id)
+    .eq("pacs_slug", slug)
     .single()
 
-  if (accessError || !pacsUser) {
+  console.log("[v0] Access check:", { assignment, accessError, userId: session.userId, slug })
+
+  if (accessError || !assignment) {
+    console.error("[v0] Access denied:", accessError)
     redirect("/admin")
   }
 
-  return <AdminPACSManagement pacs={pacs} userRole={pacsUser.role} />
+  return <AdminPACSManagement pacs={pacs} userRole={assignment.role} />
 }

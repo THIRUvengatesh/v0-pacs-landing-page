@@ -54,6 +54,7 @@ export interface PACSService {
   fees: string | null
   contact_person: string | null
   contact_phone: string | null
+  is_visible: boolean // Added is_visible field to control landing page display
   created_at: string
 }
 

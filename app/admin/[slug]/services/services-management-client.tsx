@@ -46,6 +46,7 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
     fees: "",
     contact_person: "",
     contact_phone: "",
+    is_visible: true,
   })
 
   const resetForm = () => {
@@ -61,6 +62,7 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
       fees: "",
       contact_person: "",
       contact_phone: "",
+      is_visible: true,
     })
     setEditingService(null)
   }
@@ -79,6 +81,7 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
       fees: service.fees || "",
       contact_person: service.contact_person || "",
       contact_phone: service.contact_phone || "",
+      is_visible: service.is_visible ?? true,
     })
     setIsOpen(true)
   }
@@ -101,6 +104,7 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
       fees: formData.fees,
       contact_person: formData.contact_person,
       contact_phone: formData.contact_phone,
+      is_visible: formData.is_visible,
     }
 
     try {
@@ -134,6 +138,21 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
     if (error) {
       console.error("Error deleting service:", error)
       alert("Failed to delete service")
+    } else {
+      router.refresh()
+    }
+  }
+
+  const handleToggleVisibility = async (serviceId: string, currentVisibility: boolean) => {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from("pacs_services")
+      .update({ is_visible: !currentVisibility })
+      .eq("id", serviceId)
+
+    if (error) {
+      console.error("Error toggling visibility:", error)
+      alert("Failed to update visibility")
     } else {
       router.refresh()
     }
@@ -286,6 +305,16 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
                         />
                       </div>
                     </div>
+                    <div>
+                      <Label htmlFor="is_visible">Visibility on Landing Page</Label>
+                      <Input
+                        id="is_visible"
+                        type="checkbox"
+                        checked={formData.is_visible}
+                        onChange={(e) => setFormData({ ...formData, is_visible: e.target.checked })}
+                        className="ml-2"
+                      />
+                    </div>
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
@@ -314,10 +343,29 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
             {services.map((service) => (
               <Card key={service.id} className="border-green-100">
                 <CardHeader>
-                  <CardTitle className="text-green-900">{service.service_name}</CardTitle>
-                  <CardDescription>{service.service_description}</CardDescription>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-green-900">{service.service_name}</CardTitle>
+                      <CardDescription>{service.service_description}</CardDescription>
+                    </div>
+                    <div
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        (service.is_visible ?? true) ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {(service.is_visible ?? true) ? "Visible" : "Hidden"}
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  <Button
+                    onClick={() => handleToggleVisibility(service.id, service.is_visible ?? true)}
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-green-200"
+                  >
+                    {(service.is_visible ?? true) ? "Hide from Landing Page" : "Show on Landing Page"}
+                  </Button>
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleEdit(service)}

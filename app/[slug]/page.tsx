@@ -29,9 +29,13 @@ export default async function PACSPage({ params }: PageProps) {
     notFound()
   }
 
-  // Fetch related data in parallel
   const [servicesRes, machineryRes, galleryRes] = await Promise.all([
-    supabase.from("pacs_services").select("*").eq("pacs_id", pacs.id).order("created_at", { ascending: true }),
+    supabase
+      .from("pacs_services")
+      .select("*")
+      .eq("pacs_id", pacs.id)
+      .eq("is_visible", true)
+      .order("created_at", { ascending: true }),
     supabase.from("pacs_machinery").select("*").eq("pacs_id", pacs.id).order("machinery_name", { ascending: true }),
     supabase.from("pacs_gallery").select("*").eq("pacs_id", pacs.id).order("display_order", { ascending: true }),
   ])
