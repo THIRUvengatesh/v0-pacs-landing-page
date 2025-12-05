@@ -6,35 +6,62 @@ import { AdminDashboard } from "./admin-dashboard-client"
 export default async function AdminPage() {
   const session = await getSession()
 
+  console.log("[v0] Session data:", session) // Added debug logging
+
   if (!session) {
     redirect("/auth/login")
   }
 
   const supabase = await createClient()
 
-  // Get all PACS associations for this user
   const { data: pacsAssignments, error: pacsError } = await supabase
     .from("user_pacs_assignments")
-    .select("*")
+    .select(`
+      user_id,
+      pacs_slug,
+      pacs_name,
+      role,
+      email
+    `)
     .eq("user_id", session.userId)
 
+  console.log("[v0] PACS assignments query result:", { pacsAssignments, pacsError }) // Added debug logging
+
   if (pacsError) {
-    console.error("Error fetching PACS:", pacsError)
+    console.error("[v0] Error fetching PACS assignments:", pacsError)
   }
 
-  // Transform the data to match expected format
-  const pacsAssociations =
-    pacsAssignments?.map((assignment) => ({
-      id: assignment.user_id,
-      role: assignment.role,
-      pacs: {
+  let pacsAssociations: any[] = []
+
+  if (pacsAssignments && pacsAssignments.length > 0) {
+    const slugs = pacsAssignments.map((assignment) => assignment.pacs_slug)
+
+    const { data: pacsDetails, error: pacsDetailsError } = await supabase.from("pacs").select("*").in("slug", slugs)
+
+    console.log("[v0] PACS details query result:", { pacsDetails, pacsDetailsError }) // Added debug logging
+
+    if (pacsDetailsError) {
+      console.error("[v0] Error fetching PACS details:", pacsDetailsError)
+    }
+
+    pacsAssociations = pacsAssignments.map((assignment) => {
+      const pacsDetail = pacsDetails?.find((p) => p.slug === assignment.pacs_slug)
+
+      return {
         id: assignment.user_id,
-        name: assignment.pacs_name,
-        slug: assignment.pacs_slug,
-        district: "",
-        cover_image_url: null,
-      },
-    })) || []
+        role: assignment.role,
+        pacs: {
+          id: pacsDetail?.id || assignment.pacs_slug,
+          name: assignment.pacs_name,
+          slug: assignment.pacs_slug,
+          district: pacsDetail?.district || "",
+          cover_image_url: pacsDetail?.cover_image_url || null,
+        },
+      }
+    })
+  }
+
+  console.log("[v0] Final PACS associations:", pacsAssociations) // Added debug logging
 
   return (
     <AdminDashboard
