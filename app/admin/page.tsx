@@ -6,7 +6,7 @@ import { AdminDashboard } from "./admin-dashboard-client"
 export default async function AdminPage() {
   const session = await getSession()
 
-  console.log("[v0] Session data:", session) // Added debug logging
+  console.log("[v0] Session data:", session)
 
   if (!session) {
     redirect("/auth/login")
@@ -16,19 +16,27 @@ export default async function AdminPage() {
 
   const { data: pacsAssignments, error: pacsError } = await supabase
     .from("user_pacs_assignments")
-    .select(`
-      user_id,
-      pacs_slug,
-      pacs_name,
-      role,
-      email
-    `)
+    .select("*")
     .eq("user_id", session.userId)
 
-  console.log("[v0] PACS assignments query result:", { pacsAssignments, pacsError }) // Added debug logging
+  console.log("[v0] PACS assignments query result:", {
+    pacsAssignments,
+    pacsError,
+    userId: session.userId,
+  })
 
   if (pacsError) {
     console.error("[v0] Error fetching PACS assignments:", pacsError)
+    // Return empty state instead of crashing
+    return (
+      <AdminDashboard
+        user={{
+          id: session.userId,
+          email: session.email,
+        }}
+        pacsAssociations={[]}
+      />
+    )
   }
 
   let pacsAssociations: any[] = []
@@ -36,9 +44,11 @@ export default async function AdminPage() {
   if (pacsAssignments && pacsAssignments.length > 0) {
     const slugs = pacsAssignments.map((assignment) => assignment.pacs_slug)
 
+    console.log("[v0] Fetching PACS details for slugs:", slugs)
+
     const { data: pacsDetails, error: pacsDetailsError } = await supabase.from("pacs").select("*").in("slug", slugs)
 
-    console.log("[v0] PACS details query result:", { pacsDetails, pacsDetailsError }) // Added debug logging
+    console.log("[v0] PACS details query result:", { pacsDetails, pacsDetailsError })
 
     if (pacsDetailsError) {
       console.error("[v0] Error fetching PACS details:", pacsDetailsError)
@@ -47,12 +57,18 @@ export default async function AdminPage() {
     pacsAssociations = pacsAssignments.map((assignment) => {
       const pacsDetail = pacsDetails?.find((p) => p.slug === assignment.pacs_slug)
 
+      console.log("[v0] Mapping assignment:", {
+        assignment,
+        foundDetail: !!pacsDetail,
+        pacsDetailSlug: pacsDetail?.slug,
+      })
+
       return {
-        id: assignment.user_id,
+        id: pacsDetail?.id || assignment.pacs_slug,
         role: assignment.role,
         pacs: {
           id: pacsDetail?.id || assignment.pacs_slug,
-          name: assignment.pacs_name,
+          name: assignment.pacs_name || pacsDetail?.name || "Unknown PACS",
           slug: assignment.pacs_slug,
           district: pacsDetail?.district || "",
           cover_image_url: pacsDetail?.cover_image_url || null,
@@ -61,7 +77,7 @@ export default async function AdminPage() {
     })
   }
 
-  console.log("[v0] Final PACS associations:", pacsAssociations) // Added debug logging
+  console.log("[v0] Final PACS associations:", pacsAssociations)
 
   return (
     <AdminDashboard
