@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { LoansManagement } from "./loans-management-client"
+import { GalleryManagement } from "./gallery-management-client"
 import { getSession } from "@/lib/auth/session"
 
-export default async function LoansManagementPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function GalleryManagementPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const supabase = await createClient()
 
@@ -23,11 +23,11 @@ export default async function LoansManagementPage({ params }: { params: Promise<
 
   if (!assignment) redirect("/admin")
 
-  const { data: loanSchemes } = await supabase
-    .from("pacs_loan_schemes")
+  const { data: gallery } = await supabase
+    .from("pacs_gallery")
     .select("*")
     .eq("pacs_id", pacs.id)
-    .order("created_at", { ascending: false })
+    .order("display_order", { ascending: true })
 
-  return <LoansManagement pacs={pacs} loanSchemes={loanSchemes || []} />
+  return <GalleryManagement pacs={pacs} gallery={gallery || []} />
 }

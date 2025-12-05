@@ -14,14 +14,14 @@ export default async function DepositsManagementPage({ params }: { params: Promi
 
   if (!pacs) redirect("/admin")
 
-  const { data: pacsUser } = await supabase
-    .from("pacs_users")
+  const { data: assignment } = await supabase
+    .from("user_pacs_assignments")
     .select("*")
     .eq("user_id", session.userId)
-    .eq("pacs_id", pacs.id)
+    .eq("pacs_slug", slug)
     .single()
 
-  if (!pacsUser) redirect("/admin")
+  if (!assignment) redirect("/admin")
 
   const { data: depositSchemes } = await supabase
     .from("pacs_deposit_schemes")
