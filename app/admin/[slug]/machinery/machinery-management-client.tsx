@@ -85,13 +85,22 @@ export function MachineryManagement({ pacs, machinery: initialMachinery }: Machi
 
     try {
       if (editingMachine) {
-        const { error } = await supabase.from("pacs_machinery").update(machineData).eq("id", editingMachine.id)
+        const { data, error } = await supabase
+          .from("pacs_machinery")
+          .update(machineData)
+          .eq("id", editingMachine.id)
+          .select()
+          .single()
 
         if (error) throw error
+
+        setMachinery(machinery.map((m) => (m.id === editingMachine.id ? data : m)))
       } else {
-        const { error } = await supabase.from("pacs_machinery").insert([machineData])
+        const { data, error } = await supabase.from("pacs_machinery").insert([machineData]).select().single()
 
         if (error) throw error
+
+        setMachinery([...machinery, data])
       }
 
       setIsOpen(false)
@@ -115,6 +124,7 @@ export function MachineryManagement({ pacs, machinery: initialMachinery }: Machi
       console.error("Error deleting machinery:", error)
       alert("Failed to delete machinery")
     } else {
+      setMachinery(machinery.filter((m) => m.id !== machineId))
       router.refresh()
     }
   }
