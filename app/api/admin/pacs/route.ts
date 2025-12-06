@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
 import { getSession } from "@/lib/auth/session"
+import { createAdminClient } from "@/lib/supabase/admin-client"
+import { createClient } from "@/lib/supabase/server"
 
 export async function PUT(request: Request) {
   try {
@@ -20,20 +21,24 @@ export async function PUT(request: Request) {
     const supabase = await createClient()
 
     // Verify user has access to this PACS
-    const { data: assignment } = await supabase
+    const { data: assignment, error: assignmentError } = await supabase
       .from("user_pacs_assignments")
       .select("*")
       .eq("user_id", session.userId)
       .eq("pacs_slug", updateData.slug)
       .single()
 
+    console.log("[v0] Assignment check:", assignment, assignmentError)
+
     if (!assignment) {
       console.log("[v0] User not authorized for this PACS")
       return NextResponse.json({ error: "Not authorized for this PACS" }, { status: 403 })
     }
 
+    const adminClient = createAdminClient()
+
     // Update PACS information
-    const { data, error } = await supabase
+    const { data, error } = await adminClient
       .from("pacs")
       .update({
         name: updateData.name,
@@ -63,7 +68,7 @@ export async function PUT(request: Request) {
       throw error
     }
 
-    console.log("[v0] PACS updated successfully")
+    console.log("[v0] PACS updated successfully:", data)
     return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error("[v0] Error in PACS update:", error)
