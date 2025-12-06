@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dialog"
 import { Leaf, ArrowLeft, Plus, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import type { PACS, PACSService } from "@/lib/types/pacs"
 
@@ -90,7 +89,6 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
     e.preventDefault()
     setIsLoading(true)
 
-    const supabase = createClient()
     const serviceData = {
       pacs_id: pacs.id,
       service_name: formData.service_name,
@@ -109,21 +107,35 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
 
     try {
       if (editingService) {
-        const { error } = await supabase.from("pacs_services").update(serviceData).eq("id", editingService.id)
+        const response = await fetch("/api/admin/services", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingService.id, ...serviceData }),
+        })
 
-        if (error) throw error
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || "Failed to update service")
+        }
       } else {
-        const { error } = await supabase.from("pacs_services").insert([serviceData])
+        const response = await fetch("/api/admin/services", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(serviceData),
+        })
 
-        if (error) throw error
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || "Failed to create service")
+        }
       }
 
       setIsOpen(false)
       resetForm()
       router.refresh()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving service:", error)
-      alert("Failed to save service")
+      alert(error.message || "Failed to save service")
     } finally {
       setIsLoading(false)
     }
@@ -132,29 +144,49 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
   const handleDelete = async (serviceId: string) => {
     if (!confirm("Are you sure you want to delete this service?")) return
 
-    const supabase = createClient()
-    const { error } = await supabase.from("pacs_services").delete().eq("id", serviceId)
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/admin/services?id=${serviceId}`, {
+        method: "DELETE",
+      })
 
-    if (error) {
-      console.error("Error deleting service:", error)
-      alert("Failed to delete service")
-    } else {
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to delete service")
+      }
+
       router.refresh()
+    } catch (error: any) {
+      console.error("Error deleting service:", error)
+      alert(error.message || "Failed to delete service")
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleToggleVisibility = async (serviceId: string, currentVisibility: boolean) => {
-    const supabase = createClient()
-    const { error } = await supabase
-      .from("pacs_services")
-      .update({ is_visible: !currentVisibility })
-      .eq("id", serviceId)
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/admin/services", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: serviceId,
+          is_visible: !currentVisibility,
+        }),
+      })
 
-    if (error) {
-      console.error("Error toggling visibility:", error)
-      alert("Failed to update visibility")
-    } else {
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to update visibility")
+      }
+
       router.refresh()
+    } catch (error: any) {
+      console.error("Error toggling visibility:", error)
+      alert(error.message || "Failed to update visibility")
+    } finally {
+      setIsLoading(false)
     }
   }
 
