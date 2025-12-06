@@ -94,13 +94,22 @@ export function FertilizersManagement({ pacs, fertilizers: initialFertilizers }:
 
     try {
       if (editingFertilizer) {
-        const { error } = await supabase.from("pacs_fertilizers").update(fertilizerData).eq("id", editingFertilizer.id)
+        const { data, error } = await supabase
+          .from("pacs_fertilizers")
+          .update(fertilizerData)
+          .eq("id", editingFertilizer.id)
+          .select()
+          .single()
 
         if (error) throw error
+
+        setFertilizers(fertilizers.map((f) => (f.id === editingFertilizer.id ? data : f)))
       } else {
-        const { error } = await supabase.from("pacs_fertilizers").insert([fertilizerData])
+        const { data, error } = await supabase.from("pacs_fertilizers").insert([fertilizerData]).select().single()
 
         if (error) throw error
+
+        setFertilizers([...fertilizers, data])
       }
 
       setIsOpen(false)
@@ -124,6 +133,7 @@ export function FertilizersManagement({ pacs, fertilizers: initialFertilizers }:
       console.error("Error deleting fertilizer:", error)
       alert("Failed to delete fertilizer")
     } else {
+      setFertilizers(fertilizers.filter((f) => f.id !== fertilizerId))
       router.refresh()
     }
   }

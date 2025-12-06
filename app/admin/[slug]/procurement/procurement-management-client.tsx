@@ -94,13 +94,22 @@ export function ProcurementManagement({ pacs, procurement: initialProcurement }:
 
     try {
       if (editingItem) {
-        const { error } = await supabase.from("pacs_procurement").update(procurementData).eq("id", editingItem.id)
+        const { data, error } = await supabase
+          .from("pacs_procurement")
+          .update(procurementData)
+          .eq("id", editingItem.id)
+          .select()
+          .single()
 
         if (error) throw error
+
+        setProcurement(procurement.map((p) => (p.id === editingItem.id ? data : p)))
       } else {
-        const { error } = await supabase.from("pacs_procurement").insert([procurementData])
+        const { data, error } = await supabase.from("pacs_procurement").insert([procurementData]).select().single()
 
         if (error) throw error
+
+        setProcurement([...procurement, data])
       }
 
       setIsOpen(false)
@@ -124,6 +133,7 @@ export function ProcurementManagement({ pacs, procurement: initialProcurement }:
       console.error("Error deleting procurement:", error)
       alert("Failed to delete procurement")
     } else {
+      setProcurement(procurement.filter((p) => p.id !== itemId))
       router.refresh()
     }
   }

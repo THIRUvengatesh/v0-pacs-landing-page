@@ -94,13 +94,22 @@ export function DepositsManagement({ pacs, depositSchemes: initialSchemes }: Dep
 
     try {
       if (editingScheme) {
-        const { error } = await supabase.from("pacs_deposit_schemes").update(schemeData).eq("id", editingScheme.id)
+        const { data, error } = await supabase
+          .from("pacs_deposit_schemes")
+          .update(schemeData)
+          .eq("id", editingScheme.id)
+          .select()
+          .single()
 
         if (error) throw error
+
+        setSchemes(schemes.map((s) => (s.id === editingScheme.id ? data : s)))
       } else {
-        const { error } = await supabase.from("pacs_deposit_schemes").insert([schemeData])
+        const { data, error } = await supabase.from("pacs_deposit_schemes").insert([schemeData]).select().single()
 
         if (error) throw error
+
+        setSchemes([...schemes, data])
       }
 
       setIsOpen(false)
@@ -124,6 +133,7 @@ export function DepositsManagement({ pacs, depositSchemes: initialSchemes }: Dep
       console.error("Error deleting scheme:", error)
       alert("Failed to delete scheme")
     } else {
+      setSchemes(schemes.filter((s) => s.id !== schemeId))
       router.refresh()
     }
   }
