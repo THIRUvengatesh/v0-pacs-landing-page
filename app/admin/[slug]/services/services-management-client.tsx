@@ -181,6 +181,12 @@ export function ServicesManagement({ pacs, services: initialServices }: Services
         throw new Error(error.error || "Failed to update visibility")
       }
 
+      setServices((prevServices) =>
+        prevServices.map((service) =>
+          service.id === serviceId ? { ...service, is_visible: !currentVisibility } : service,
+        ),
+      )
+
       router.refresh()
     } catch (error: any) {
       console.error("Error toggling visibility:", error)
