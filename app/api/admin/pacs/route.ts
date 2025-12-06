@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/auth/session"
-import { createAdminClient } from "@/lib/supabase/admin-client"
 import { createClient } from "@/lib/supabase/server"
 
 export async function PUT(request: Request) {
@@ -17,7 +16,6 @@ export async function PUT(request: Request) {
     const { pacsId, ...updateData } = body
 
     console.log("[v0] Updating PACS:", pacsId, "for user:", session.userId)
-    console.log("[v0] Update data:", updateData)
 
     const supabase = await createClient()
 
@@ -28,23 +26,19 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "PACS not found" }, { status: 404 })
     }
 
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment } = await supabase
       .from("user_pacs_assignments")
       .select("*")
       .eq("user_id", session.userId)
       .eq("pacs_slug", pacsData.slug)
       .single()
 
-    console.log("[v0] Assignment check:", assignment, assignmentError)
-
     if (!assignment) {
       console.log("[v0] User not authorized for this PACS")
       return NextResponse.json({ error: "Not authorized for this PACS" }, { status: 403 })
     }
 
-    const adminClient = createAdminClient()
-
-    const { data, error } = await adminClient
+    const { data, error } = await supabase
       .from("pacs")
       .update({
         name: updateData.name,
