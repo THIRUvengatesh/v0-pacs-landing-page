@@ -17,15 +17,22 @@ export async function PUT(request: Request) {
     const { pacsId, ...updateData } = body
 
     console.log("[v0] Updating PACS:", pacsId, "for user:", session.userId)
+    console.log("[v0] Update data:", updateData)
 
     const supabase = await createClient()
 
-    // Verify user has access to this PACS
+    const { data: pacsData, error: pacsError } = await supabase.from("pacs").select("slug").eq("id", pacsId).single()
+
+    if (pacsError || !pacsData) {
+      console.log("[v0] PACS not found:", pacsError)
+      return NextResponse.json({ error: "PACS not found" }, { status: 404 })
+    }
+
     const { data: assignment, error: assignmentError } = await supabase
       .from("user_pacs_assignments")
       .select("*")
       .eq("user_id", session.userId)
-      .eq("pacs_slug", updateData.slug)
+      .eq("pacs_slug", pacsData.slug)
       .single()
 
     console.log("[v0] Assignment check:", assignment, assignmentError)
@@ -37,7 +44,6 @@ export async function PUT(request: Request) {
 
     const adminClient = createAdminClient()
 
-    // Update PACS information
     const { data, error } = await adminClient
       .from("pacs")
       .update({
@@ -64,8 +70,8 @@ export async function PUT(request: Request) {
       .single()
 
     if (error) {
-      console.error("[v0] Database error:", error)
-      throw error
+      console.error("[v0] Database update error:", error)
+      return NextResponse.json({ error: `Database error: ${error.message}` }, { status: 500 })
     }
 
     console.log("[v0] PACS updated successfully:", data)
