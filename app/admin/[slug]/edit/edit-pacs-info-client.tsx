@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Leaf, Save } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+// import { createClient } from "@/lib/supabase/client"
 import type { PACS } from "@/lib/types/pacs"
 
 interface EditPACSInfoProps {
@@ -20,7 +20,7 @@ interface EditPACSInfoProps {
 
 export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
   const router = useRouter()
-  const supabase = createClient()
+  // const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: pacs.name || "",
@@ -46,9 +46,16 @@ export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
     setLoading(true)
 
     try {
-      const { error } = await supabase
-        .from("pacs")
-        .update({
+      console.log("[v0] Submitting PACS update...")
+
+      const response = await fetch("/api/admin/pacs", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pacsId: pacs.id,
+          slug: pacs.slug,
           name: formData.name,
           district: formData.district,
           state: formData.state,
@@ -65,18 +72,22 @@ export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
           longitude: formData.longitude ? Number.parseFloat(formData.longitude) : null,
           map_url: formData.map_url,
           cover_image_url: formData.cover_image_url,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", pacs.id)
+        }),
+      })
 
-      if (error) throw error
+      const result = await response.json()
 
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update PACS")
+      }
+
+      console.log("[v0] PACS updated successfully")
       alert("PACS information updated successfully!")
       router.push(`/admin/${pacs.slug}`)
       router.refresh()
     } catch (error) {
-      console.error("Error updating PACS:", error)
-      alert("Failed to update PACS information")
+      console.error("[v0] Error updating PACS:", error)
+      alert(error instanceof Error ? error.message : "Failed to update PACS information")
     } finally {
       setLoading(false)
     }
