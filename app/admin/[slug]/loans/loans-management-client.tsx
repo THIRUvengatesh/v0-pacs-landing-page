@@ -98,14 +98,26 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
 
     try {
       if (editingScheme) {
-        const { error } = await supabase.from("pacs_loan_schemes").update(schemeData).eq("id", editingScheme.id)
+        const { data, error } = await supabase
+          .from("pacs_loan_schemes")
+          .update(schemeData)
+          .eq("id", editingScheme.id)
+          .select()
+          .single()
 
         if (error) throw error
+
+        // Update the scheme in local state
+        setSchemes(schemes.map((s) => (s.id === editingScheme.id ? data : s)))
       } else {
-        const { error } = await supabase.from("pacs_loan_schemes").insert([schemeData])
+        const { data, error } = await supabase.from("pacs_loan_schemes").insert([schemeData]).select().single()
 
         if (error) throw error
+
+        // Add new scheme to local state
+        setSchemes([...schemes, data])
       }
+      // </CHANGE>
 
       setIsOpen(false)
       resetForm()
@@ -128,6 +140,8 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
       console.error("Error deleting scheme:", error)
       alert("Failed to delete scheme")
     } else {
+      setSchemes(schemes.filter((s) => s.id !== schemeId))
+      // </CHANGE>
       router.refresh()
     }
   }
