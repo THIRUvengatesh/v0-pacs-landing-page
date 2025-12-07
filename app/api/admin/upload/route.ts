@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/auth/session"
-import { createServerClient } from "@supabase/ssr"
+import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
   try {
@@ -29,14 +29,19 @@ export async function POST(request: Request) {
 
     console.log("[v0] File details:", { name: file.name, type: file.type, size: file.size })
 
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      cookies: {
-        getAll() {
-          return []
-        },
-        setAll() {},
-      },
-    })
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("[v0] Missing Supabase credentials:", {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey,
+      })
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
+    // Create a simple Supabase client for storage using service role
+    const supabase = createClient()
 
     // Create a unique filename
     const timestamp = Date.now()
