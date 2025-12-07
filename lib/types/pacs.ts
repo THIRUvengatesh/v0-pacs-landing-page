@@ -13,6 +13,7 @@ export interface PACS {
   latitude: number | null
   longitude: number | null
   cover_image_url: string | null
+  header_background_url: string | null // Added header_background_url for landing page hero section background
   president_name: string | null
   president_contact: string | null
   secretary_name: string | null

@@ -13,8 +13,10 @@ export function HeroSection({ pacs }: HeroSectionProps) {
       <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden">
         <Image
           src={
+            pacs.header_background_url ||
             pacs.cover_image_url ||
-            "/placeholder.svg?height=400&width=1200&query=agricultural cooperative society building"
+            "/placeholder.svg?height=400&width=1200&query=agricultural cooperative society building" ||
+            "/placeholder.svg"
           }
           alt={`${pacs.name} cover`}
           fill
