@@ -103,15 +103,25 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
       let imageUrl = formData.image_url
 
       if (selectedFile) {
+        console.log("[v0] Uploading file:", selectedFile.name)
         imageUrl = await uploadFile(selectedFile)
+        console.log("[v0] File uploaded successfully, URL:", imageUrl)
       }
 
       if (!imageUrl) {
         alert("Please provide an image file or URL")
+        setLoading(false)
+        setUploadingGallery(false)
         return
       }
 
+      console.log("[v0] Saving to database, PACS ID:", pacs.id)
+      console.log("[v0] Image URL:", imageUrl)
+      console.log("[v0] Caption:", formData.caption)
+      console.log("[v0] Display order:", formData.display_order)
+
       if (editingItem) {
+        console.log("[v0] Updating existing item:", editingItem.id)
         const { data, error } = await supabase
           .from("pacs_gallery")
           .update({
@@ -123,10 +133,15 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
           .select()
           .single()
 
-        if (error) throw error
+        if (error) {
+          console.error("[v0] Update error:", error)
+          throw error
+        }
 
+        console.log("[v0] Update successful:", data)
         setGallery(gallery.map((item) => (item.id === editingItem.id ? { ...item, ...data } : item)))
       } else {
+        console.log("[v0] Inserting new item")
         const { data, error } = await supabase
           .from("pacs_gallery")
           .insert({
@@ -138,8 +153,12 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
           .select()
           .single()
 
-        if (error) throw error
+        if (error) {
+          console.error("[v0] Insert error:", error)
+          throw error
+        }
 
+        console.log("[v0] Insert successful:", data)
         setGallery([...gallery, data])
       }
 
@@ -149,8 +168,9 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
       setFormData({ image_url: "", caption: "", display_order: gallery.length + 1 })
       router.refresh()
     } catch (error) {
-      console.error("Error saving gallery item:", error)
-      alert("Failed to save gallery item")
+      console.error("[v0] Error saving gallery item:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+      alert(`Failed to save gallery item: ${errorMessage}`)
     } finally {
       setLoading(false)
       setUploadingGallery(false)
@@ -409,6 +429,7 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                       src={
                         headerPreview ||
                         "/placeholder.svg?height=400&width=1200&query=agricultural cooperative society header" ||
+                        "/placeholder.svg" ||
                         "/placeholder.svg"
                       }
                       alt="Header background preview"
