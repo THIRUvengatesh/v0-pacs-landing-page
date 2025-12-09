@@ -51,45 +51,6 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-12 px-6 max-w-7xl mx-auto">
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white shadow-lg">
-          <CardHeader className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <CardTitle className="text-2xl md:text-3xl font-bold text-green-900 mb-3">Available Loan Schemes</CardTitle>
-            <CardDescription className="text-base md:text-lg">
-              Explore {totalLoans || 0}+ agricultural loan schemes from PACS across the region
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center pb-8">
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Find the right financial support for your farming needs with competitive interest rates and flexible
-              repayment options
-            </p>
-            <Link href="/loans">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                View All Loan Schemes
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </section>
-
       {/* PACS Directory */}
       <section className="py-12 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-10">
