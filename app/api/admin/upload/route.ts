@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_KEY
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     console.log(supabaseUrl, supabaseServiceKey)
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error("[v0] Missing Supabase credentials")
