@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { ArrowLeft, DollarSign, Clock, FileText, CheckCircle2, ClipboardList } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 interface LoanScheme {
   id: string
@@ -28,6 +29,14 @@ interface PACS {
   slug: string
 }
 
+interface ApplicationStep {
+  id: string
+  step_number: number
+  step_title: string
+  step_description: string
+  duration_period: string | null
+}
+
 interface LoansPageClientProps {
   pacs: PACS
   loans: LoanScheme[]
@@ -36,45 +45,94 @@ interface LoansPageClientProps {
 export default function LoansPageClient({ pacs, loans }: LoansPageClientProps) {
   const [selectedLoan, setSelectedLoan] = useState<LoanScheme | null>(null)
   const [showProcedure, setShowProcedure] = useState(false)
+  const [customSteps, setCustomSteps] = useState<ApplicationStep[]>([])
+  const [loadingSteps, setLoadingSteps] = useState(false)
 
-  const applicationSteps = [
+  useEffect(() => {
+    if (showProcedure && selectedLoan) {
+      fetchApplicationSteps(selectedLoan.id)
+    }
+  }, [showProcedure, selectedLoan])
+
+  const fetchApplicationSteps = async (loanSchemeId: string) => {
+    setLoadingSteps(true)
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("pacs_loan_application_steps")
+        .select("*")
+        .eq("loan_scheme_id", loanSchemeId)
+        .order("step_number", { ascending: true })
+
+      if (error) {
+        console.error("[v0] Error fetching application steps:", error)
+        setCustomSteps([])
+      } else {
+        setCustomSteps(data || [])
+      }
+    } catch (error) {
+      console.error("[v0] Error fetching application steps:", error)
+      setCustomSteps([])
+    } finally {
+      setLoadingSteps(false)
+    }
+  }
+
+  const defaultApplicationSteps = [
     {
       step: 1,
       title: "Check Eligibility",
       description: "Review the eligibility criteria and ensure you meet all the requirements for this loan scheme.",
+      duration: null,
     },
     {
       step: 2,
       title: "Prepare Documents",
       description:
         "Gather all required documents as listed in the loan details. Make sure they are up-to-date and properly attested.",
+      duration: null,
     },
     {
       step: 3,
       title: "Visit PACS Office",
       description: `Visit the ${pacs.name} office during working hours with your documents and identification proof.`,
+      duration: null,
     },
     {
       step: 4,
       title: "Fill Application Form",
       description: "Complete the loan application form with accurate information. Our staff will assist you if needed.",
+      duration: null,
     },
     {
       step: 5,
       title: "Submit Documents",
       description: "Submit your completed application form along with all required documents to the loan officer.",
+      duration: null,
     },
     {
       step: 6,
       title: "Verification Process",
       description: "Your application and documents will be verified. This typically takes 3-5 working days.",
+      duration: "3-5 days",
     },
     {
       step: 7,
       title: "Approval & Disbursement",
       description: "Once approved, the loan amount will be disbursed to your account as per the scheme terms.",
+      duration: "1-2 days",
     },
   ]
+
+  const applicationSteps =
+    customSteps.length > 0
+      ? customSteps.map((step) => ({
+          step: step.step_number,
+          title: step.step_title,
+          description: step.step_description,
+          duration: step.duration_period,
+        }))
+      : defaultApplicationSteps
 
   return (
     <main className="min-h-screen bg-white">
@@ -254,27 +312,41 @@ export default function LoansPageClient({ pacs, loans }: LoansPageClientProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 pt-4">
-            {applicationSteps.map((step, index) => (
-              <div
-                key={step.step}
-                className="flex gap-4 p-4 rounded-lg border-2 border-green-100 hover:border-green-300 transition-colors bg-white"
-              >
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
-                    {step.step}
+          {loadingSteps ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">Loading application procedure...</p>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-4">
+              {applicationSteps.map((step, index) => (
+                <div
+                  key={step.step}
+                  className="flex gap-4 p-4 rounded-lg border-2 border-green-100 hover:border-green-300 transition-colors bg-white"
+                >
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
+                      {step.step}
+                    </div>
                   </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-semibold text-lg text-green-900">{step.title}</h4>
+                      {step.duration && (
+                        <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200">
+                          <Clock className="inline h-3 w-3 mr-1" />
+                          {step.duration}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                  </div>
+                  {index < applicationSteps.length - 1 && (
+                    <div className="absolute left-10 mt-16 w-0.5 h-4 bg-green-200" />
+                  )}
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-lg text-green-900 mb-1">{step.title}</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
-                </div>
-                {index < applicationSteps.length - 1 && (
-                  <div className="absolute left-10 mt-16 w-0.5 h-4 bg-green-200" />
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
             <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
