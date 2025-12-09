@@ -45,6 +45,7 @@ export async function POST(request: Request) {
         fullName: user.full_name,
         role: user.role,
       },
+      redirectUrl: "/admin",
     })
   } catch (error) {
     console.error("Login error:", error)
