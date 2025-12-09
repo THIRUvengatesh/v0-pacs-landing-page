@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import type { PACSService } from "@/lib/types/pacs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -80,7 +82,7 @@ export function ServicesSection({ services, pacsSlug, loanSchemesCount = 0 }: Se
                         interest rates and flexible repayment options
                       </p>
                       <div className="flex items-center text-sm text-green-600 font-medium group-hover:text-green-700">
-                        Learn more
+                        View schemes
                         <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>

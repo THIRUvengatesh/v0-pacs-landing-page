@@ -17,11 +17,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Leaf, ArrowLeft, Plus, Edit, Trash2 } from "lucide-react"
+import { Leaf, ArrowLeft, Plus, Edit, Trash2, List, X } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import type { PACS, PACSLoanScheme } from "@/lib/types/pacs"
+
+interface LoanApplicationStep {
+  id?: string
+  step_number: number
+  step_title: string
+  step_description: string
+}
 
 interface LoansManagementProps {
   pacs: PACS
@@ -33,6 +40,11 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
   const [isOpen, setIsOpen] = useState(false)
   const [editingScheme, setEditingScheme] = useState<PACSLoanScheme | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isStepsOpen, setIsStepsOpen] = useState(false)
+  const [managingStepsSchemeId, setManagingStepsSchemeId] = useState<string | null>(null)
+  const [applicationSteps, setApplicationSteps] = useState<LoanApplicationStep[]>([])
+  const [newStep, setNewStep] = useState({ step_title: "", step_description: "" })
+  //
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -107,17 +119,14 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
 
         if (error) throw error
 
-        // Update the scheme in local state
         setSchemes(schemes.map((s) => (s.id === editingScheme.id ? data : s)))
       } else {
         const { data, error } = await supabase.from("pacs_loan_schemes").insert([schemeData]).select().single()
 
         if (error) throw error
 
-        // Add new scheme to local state
         setSchemes([...schemes, data])
       }
-      // </CHANGE>
 
       setIsOpen(false)
       resetForm()
@@ -141,10 +150,101 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
       alert("Failed to delete scheme")
     } else {
       setSchemes(schemes.filter((s) => s.id !== schemeId))
-      // </CHANGE>
       router.refresh()
     }
   }
+
+  const handleManageSteps = async (schemeId: string) => {
+    setManagingStepsSchemeId(schemeId)
+    setIsStepsOpen(true)
+
+    // Fetch existing steps
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from("pacs_loan_application_steps")
+      .select("*")
+      .eq("loan_scheme_id", schemeId)
+      .order("step_number")
+
+    if (!error && data) {
+      setApplicationSteps(data)
+    } else {
+      setApplicationSteps([])
+    }
+  }
+
+  const handleAddStep = async () => {
+    if (!newStep.step_title || !newStep.step_description || !managingStepsSchemeId) return
+
+    const supabase = createClient()
+    const stepNumber = applicationSteps.length + 1
+
+    const { data, error } = await supabase
+      .from("pacs_loan_application_steps")
+      .insert([
+        {
+          loan_scheme_id: managingStepsSchemeId,
+          step_number: stepNumber,
+          step_title: newStep.step_title,
+          step_description: newStep.step_description,
+        },
+      ])
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error adding step:", error)
+      alert("Failed to add step")
+    } else {
+      setApplicationSteps([...applicationSteps, data])
+      setNewStep({ step_title: "", step_description: "" })
+    }
+  }
+
+  const handleDeleteStep = async (stepId: string) => {
+    if (!confirm("Are you sure you want to delete this step?")) return
+
+    const supabase = createClient()
+    const { error } = await supabase.from("pacs_loan_application_steps").delete().eq("id", stepId)
+
+    if (error) {
+      console.error("Error deleting step:", error)
+      alert("Failed to delete step")
+    } else {
+      setApplicationSteps(applicationSteps.filter((s) => s.id !== stepId))
+    }
+  }
+
+  const handleReorderSteps = async () => {
+    if (!managingStepsSchemeId) return
+
+    const supabase = createClient()
+
+    // Update step numbers
+    for (let i = 0; i < applicationSteps.length; i++) {
+      await supabase
+        .from("pacs_loan_application_steps")
+        .update({ step_number: i + 1 })
+        .eq("id", applicationSteps[i].id)
+    }
+  }
+
+  const moveStepUp = (index: number) => {
+    if (index === 0) return
+    const newSteps = [...applicationSteps]
+    ;[newSteps[index - 1], newSteps[index]] = [newSteps[index], newSteps[index - 1]]
+    setApplicationSteps(newSteps)
+    handleReorderSteps()
+  }
+
+  const moveStepDown = (index: number) => {
+    if (index === applicationSteps.length - 1) return
+    const newSteps = [...applicationSteps]
+    ;[newSteps[index], newSteps[index + 1]] = [newSteps[index + 1], newSteps[index]]
+    setApplicationSteps(newSteps)
+    handleReorderSteps()
+  }
+  //
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
@@ -295,6 +395,111 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
         </div>
       </header>
 
+      <Dialog open={isStepsOpen} onOpenChange={setIsStepsOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Application Steps</DialogTitle>
+            <DialogDescription>Add and manage the step-by-step procedure for this loan application</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Existing Steps */}
+            <div className="space-y-3">
+              {applicationSteps.map((step, index) => (
+                <Card key={step.id} className="border-green-100">
+                  <CardContent className="pt-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => moveStepUp(index)}
+                          disabled={index === 0}
+                          className="h-6 w-6 p-0"
+                        >
+                          ↑
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => moveStepDown(index)}
+                          disabled={index === applicationSteps.length - 1}
+                          className="h-6 w-6 p-0"
+                        >
+                          ↓
+                        </Button>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-green-900">{step.step_title}</h4>
+                              <p className="text-sm text-green-600">{step.step_description}</p>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => step.id && handleDeleteStep(step.id)}
+                            className="text-red-600 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Add New Step */}
+            <Card className="border-green-200 bg-green-50/50">
+              <CardHeader>
+                <CardTitle className="text-sm">Add New Step</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label htmlFor="step_title">Step Title</Label>
+                  <Input
+                    id="step_title"
+                    value={newStep.step_title}
+                    onChange={(e) => setNewStep({ ...newStep, step_title: e.target.value })}
+                    placeholder="e.g., Submit Application Form"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="step_description">Step Description</Label>
+                  <Textarea
+                    id="step_description"
+                    value={newStep.step_description}
+                    onChange={(e) => setNewStep({ ...newStep, step_description: e.target.value })}
+                    rows={2}
+                    placeholder="Describe what the applicant needs to do in this step"
+                  />
+                </div>
+                <Button
+                  onClick={handleAddStep}
+                  disabled={!newStep.step_title || !newStep.step_description}
+                  className="w-full bg-green-700 hover:bg-green-800"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Step
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end">
+              <Button onClick={() => setIsStepsOpen(false)}>Done</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* */}
+
       <main className="container mx-auto px-4 py-8">
         {schemes.length === 0 ? (
           <Card className="border-green-100">
@@ -359,6 +564,15 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
                       Edit
                     </Button>
                     <Button
+                      onClick={() => handleManageSteps(scheme.id)}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 border-green-200"
+                    >
+                      <List className="h-4 w-4 mr-2" />
+                      Steps
+                    </Button>
+                    <Button
                       onClick={() => handleDelete(scheme.id)}
                       variant="outline"
                       size="sm"
@@ -367,6 +581,7 @@ export function LoansManagement({ pacs, loanSchemes: initialSchemes }: LoansMana
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+                  {/* */}
                 </CardContent>
               </Card>
             ))}
