@@ -9,7 +9,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const formData = await request.formData()
+    let formData: FormData
+    try {
+      formData = await request.formData()
+    } catch (error) {
+      console.error("[v0] Error reading formData:", error)
+      return NextResponse.json({ error: "Failed to read form data" }, { status: 400 })
+    }
+
     const file = formData.get("file") as File
     const pacsSlug = formData.get("pacsSlug") as string
 
@@ -33,7 +40,7 @@ export async function POST(request: Request) {
 
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    console.log(supabaseUrl, supabaseServiceKey)
+
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error("[v0] Missing Supabase credentials")
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
@@ -50,13 +57,20 @@ export async function POST(request: Request) {
     const fileName = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`
     const filePath = `pacs/${pacsSlug}/${fileName}`
 
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    let buffer: Buffer
+    try {
+      const arrayBuffer = await file.arrayBuffer()
+      buffer = Buffer.from(arrayBuffer)
+    } catch (error) {
+      console.error("[v0] Error reading file buffer:", error)
+      return NextResponse.json({ error: "Failed to read file data" }, { status: 400 })
+    }
 
     const { data: buckets } = await supabase.storage.listBuckets()
     const bucketExists = buckets?.some((b) => b.name === "uploads")
 
     if (!bucketExists) {
+      console.log("[v0] Creating uploads bucket...")
       const { error: bucketError } = await supabase.storage.createBucket("uploads", {
         public: true,
         fileSizeLimit: 10485760, // 10MB
@@ -80,6 +94,8 @@ export async function POST(request: Request) {
     }
 
     const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(uploadData.path)
+
+    console.log("[v0] File uploaded successfully:", urlData.publicUrl)
 
     return NextResponse.json({
       success: true,
