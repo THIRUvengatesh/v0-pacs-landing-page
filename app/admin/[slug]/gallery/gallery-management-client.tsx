@@ -53,12 +53,19 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [headerFile, setHeaderFile] = useState<File | null>(null)
   const [headerPreview, setHeaderPreview] = useState<string>(pacs.header_background_url || pacs.cover_image_url || "")
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setUploadError(null)
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      if (file.size > maxSize) {
+        setUploadError(`File size exceeds 10MB limit. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
+        e.target.value = "" // Clear the input
+        return
+      }
       setSelectedFile(file)
-      // Clear the URL field when file is selected
       setFormData({ ...formData, image_url: "" })
     }
   }
@@ -66,8 +73,14 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
   const handleHeaderFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setUploadError(null)
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      if (file.size > maxSize) {
+        setUploadError(`File size exceeds 10MB limit. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
+        e.target.value = "" // Clear the input
+        return
+      }
       setHeaderFile(file)
-      // Show preview
       const reader = new FileReader()
       reader.onloadend = () => {
         setHeaderPreview(reader.result as string)
@@ -87,7 +100,8 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
     })
 
     if (!response.ok) {
-      throw new Error("Failed to upload file")
+      const errorData = await response.json()
+      throw new Error(errorData.error || "Failed to upload file")
     }
 
     const data = await response.json()
@@ -98,6 +112,7 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
     e.preventDefault()
     setLoading(true)
     setUploadingGallery(true)
+    setUploadError(null)
 
     try {
       let imageUrl = formData.image_url
@@ -109,19 +124,15 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
       }
 
       if (!imageUrl) {
-        alert("Please provide an image file or URL")
+        setUploadError("Please provide an image file or URL")
         setLoading(false)
         setUploadingGallery(false)
         return
       }
 
       console.log("[v0] Saving to database, PACS ID:", pacs.id)
-      console.log("[v0] Image URL:", imageUrl)
-      console.log("[v0] Caption:", formData.caption)
-      console.log("[v0] Display order:", formData.display_order)
 
       if (editingItem) {
-        console.log("[v0] Updating existing item:", editingItem.id)
         const { data, error } = await supabase
           .from("pacs_gallery")
           .update({
@@ -133,15 +144,9 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
           .select()
           .single()
 
-        if (error) {
-          console.error("[v0] Update error:", error)
-          throw error
-        }
-
-        console.log("[v0] Update successful:", data)
+        if (error) throw error
         setGallery(gallery.map((item) => (item.id === editingItem.id ? { ...item, ...data } : item)))
       } else {
-        console.log("[v0] Inserting new item")
         const { data, error } = await supabase
           .from("pacs_gallery")
           .insert({
@@ -153,24 +158,20 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
           .select()
           .single()
 
-        if (error) {
-          console.error("[v0] Insert error:", error)
-          throw error
-        }
-
-        console.log("[v0] Insert successful:", data)
+        if (error) throw error
         setGallery([...gallery, data])
       }
 
       setDialogOpen(false)
       setEditingItem(null)
       setSelectedFile(null)
+      setUploadError(null)
       setFormData({ image_url: "", caption: "", display_order: gallery.length + 1 })
       router.refresh()
     } catch (error) {
       console.error("[v0] Error saving gallery item:", error)
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
-      alert(`Failed to save gallery item: ${errorMessage}`)
+      setUploadError(errorMessage)
     } finally {
       setLoading(false)
       setUploadingGallery(false)
@@ -179,11 +180,12 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
 
   const handleHeaderUpload = async () => {
     if (!headerFile) {
-      alert("Please select an image file")
+      setUploadError("Please select an image file")
       return
     }
 
     setUploadingHeader(true)
+    setUploadError(null)
 
     try {
       const imageUrl = await uploadFile(headerFile)
@@ -199,11 +201,13 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
 
       setHeaderPreview(imageUrl)
       setHeaderFile(null)
+      setUploadError(null)
       alert("Header background updated successfully!")
       router.refresh()
     } catch (error) {
       console.error("Error updating header background:", error)
-      alert("Failed to update header background")
+      const errorMessage = error instanceof Error ? error.message : "Failed to update header background"
+      setUploadError(errorMessage)
     } finally {
       setUploadingHeader(false)
     }
@@ -239,6 +243,7 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
   const handleAddNew = () => {
     setEditingItem(null)
     setSelectedFile(null)
+    setUploadError(null)
     setFormData({ image_url: "", caption: "", display_order: gallery.length + 1 })
     setDialogOpen(true)
   }
@@ -276,7 +281,6 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
             <TabsTrigger value="header">Header Background</TabsTrigger>
           </TabsList>
 
-          {/* Gallery Images Tab */}
           <TabsContent value="gallery">
             <div className="mb-4 flex justify-end">
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -294,6 +298,12 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    {uploadError && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        {uploadError}
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <Label htmlFor="image_file">Upload Image File</Label>
                       <div className="flex items-center gap-2">
@@ -303,10 +313,12 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                           accept="image/*"
                           onChange={handleFileChange}
                           className="flex-1"
+                          key={selectedFile?.name || "file-input"}
                         />
                         {uploadingGallery && <Loader2 className="h-4 w-4 animate-spin text-green-700" />}
                       </div>
                       {selectedFile && <p className="text-xs text-green-600">Selected: {selectedFile.name}</p>}
+                      <p className="text-xs text-gray-500">Maximum file size: 10MB</p>
                     </div>
 
                     <div className="relative">
@@ -421,7 +433,12 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                 <CardDescription>Upload a background image for your PACS landing page hero section</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Current Header Preview */}
+                {uploadError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {uploadError}
+                  </div>
+                )}
+
                 <div>
                   <Label className="mb-2 block">Current Header Background</Label>
                   <div className="relative aspect-[3/1] w-full rounded-lg overflow-hidden bg-green-50 border-2 border-green-100">
@@ -429,6 +446,7 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                       src={
                         headerPreview ||
                         "/placeholder.svg?height=400&width=1200&query=agricultural cooperative society header" ||
+                        "/placeholder.svg" ||
                         "/placeholder.svg" ||
                         "/placeholder.svg"
                       }
@@ -439,7 +457,6 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                   </div>
                 </div>
 
-                {/* Upload New Background */}
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="header_file">Upload New Background Image</Label>
@@ -449,8 +466,11 @@ export function GalleryManagement({ pacs, gallery: initialGallery }: GalleryMana
                       accept="image/*"
                       onChange={handleHeaderFileChange}
                       className="cursor-pointer"
+                      key={headerFile?.name || "header-file-input"}
                     />
-                    <p className="text-xs text-green-600">Recommended size: 1200x400px or larger for best quality</p>
+                    <p className="text-xs text-green-600">
+                      Recommended size: 1200x400px or larger. Maximum file size: 10MB
+                    </p>
                   </div>
 
                   {headerFile && (

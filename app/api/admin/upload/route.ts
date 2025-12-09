@@ -17,6 +17,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
+    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        {
+          error: `File size exceeds limit. Maximum allowed size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        },
+        { status: 400 },
+      )
+    }
+
     if (!pacsSlug) {
       return NextResponse.json({ error: "PACS slug is required" }, { status: 400 })
     }
