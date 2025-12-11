@@ -4,13 +4,13 @@ import { createClient } from "@/lib/supabase/server"
 import { TemplateManagement } from "./template-management-client"
 
 interface TemplatePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default async function TemplatePage({ params }: TemplatePageProps) {
-  const { slug } = params
+  const { slug } = await params
   const supabase = createClient()
   const cookieStore = await cookies()
   const sessionCookie = cookieStore.get("session")
