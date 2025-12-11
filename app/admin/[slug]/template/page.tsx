@@ -16,7 +16,7 @@ export default async function TemplatePage({ params }: TemplatePageProps) {
   const sessionCookie = cookieStore.get("session")
 
   if (!sessionCookie) {
-    redirect("/login")
+    redirect("/auth/login")
   }
 
   const session = JSON.parse(sessionCookie.value)
