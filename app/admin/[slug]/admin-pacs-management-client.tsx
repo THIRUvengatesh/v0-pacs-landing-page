@@ -16,6 +16,7 @@ import {
   CreditCard,
   PiggyBank,
   ImageIcon,
+  Layout,
 } from "lucide-react"
 import Link from "next/link"
 import type { PACS } from "@/lib/types/pacs"
@@ -74,6 +75,13 @@ export function AdminPACSManagement({ pacs, userRole }: AdminPACSManagementProps
             >
               <Building2 className="h-4 w-4 mr-2" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="template"
+              className="data-[state=active]:bg-green-100 data-[state=active]:text-green-900"
+            >
+              <Layout className="h-4 w-4 mr-2" />
+              Template
             </TabsTrigger>
             <TabsTrigger
               value="services"
@@ -164,6 +172,20 @@ export function AdminPACSManagement({ pacs, userRole }: AdminPACSManagementProps
                     <Button className="bg-green-700 hover:bg-green-800">Edit PACS Information</Button>
                   </Link>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="template">
+            <Card className="border-green-100">
+              <CardHeader>
+                <CardTitle className="text-green-900">Template Management</CardTitle>
+                <CardDescription>Choose and customize your landing page template</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href={`/admin/${pacs.slug}/template`}>
+                  <Button className="bg-green-700 hover:bg-green-800">Manage Templates</Button>
+                </Link>
               </CardContent>
             </Card>
           </TabsContent>
