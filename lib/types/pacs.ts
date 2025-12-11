@@ -14,6 +14,7 @@ export interface PACS {
   longitude: number | null
   cover_image_url: string | null
   header_background_url: string | null // Added header_background_url for landing page hero section background
+  logo_url?: string | null // Added logo_url field
   president_name: string | null
   president_contact: string | null
   secretary_name: string | null
@@ -25,6 +26,7 @@ export interface PACS {
   about_history: string | null
   about_services: string | null
   about_impact: string | null
+  template_type: number | null // Added template_type field for template selection
   created_at: string
   updated_at: string
 }
@@ -137,6 +139,15 @@ export interface PACSProcurement {
   created_at: string
   updated_at: string
 }
+
+// Type aliases for compatibility
+export type Service = PACSService
+export type Machinery = PACSmachinery
+export type GalleryImage = PACSGallery
+export type LoanScheme = PACSLoanScheme
+export type DepositScheme = PACSDepositScheme
+export type Fertilizer = PACSFertilizer
+export type Procurement = PACSProcurement
 
 export interface PACSWithRelations extends PACS {
   services?: PACSService[]

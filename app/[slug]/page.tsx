@@ -1,15 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
-import { HeroSection } from "@/components/pacs/hero-section"
-import { ContactCard } from "@/components/pacs/contact-card"
-import { ServicesSection } from "@/components/pacs/services-section"
-import { MachinerySection } from "@/components/pacs/machinery-section"
-import { ManagementSection } from "@/components/pacs/management-section"
-import { GallerySection } from "@/components/pacs/gallery-section"
-import { AboutSection } from "@/components/pacs/about-section"
-import { MapSection } from "@/components/pacs/map-section"
-import { CTASection } from "@/components/pacs/cta-section"
-import { Footer } from "@/components/pacs/footer"
+import { Template1 } from "@/components/templates/template-1"
+import { Template2 } from "@/components/templates/template-2"
 import type { PACSWithRelations } from "@/lib/types/pacs"
 
 interface PageProps {
@@ -61,50 +53,14 @@ export default async function PACSPage({ params }: PageProps) {
     gallery: galleryRes.data || [],
   }
 
-  const loanSchemesCount = loansRes.data?.length || 0
+  const loanSchemes = loansRes.data || []
 
-  return (
-    <main className="min-h-screen bg-white">
-      <HeroSection pacs={pacsData} />
+  if (pacs.template_type === 2) {
+    return <Template2 pacs={pacsData} loanSchemes={loanSchemes} />
+  }
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-0">
-            {pacsData.services && pacsData.services.length > 0 && (
-              <div className="-mx-6">
-                <ServicesSection
-                  services={pacsData.services}
-                  pacsSlug={slug}
-                  loanSchemesCount={loanSchemesCount}
-                  loans={loansRes.data || []}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-6">
-              <ContactCard pacs={pacsData} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {pacsData.machinery && pacsData.machinery.length > 0 && <MachinerySection machinery={pacsData.machinery} />}
-
-      <ManagementSection pacs={pacsData} />
-
-      {pacsData.gallery && pacsData.gallery.length > 0 && <GallerySection gallery={pacsData.gallery} />}
-
-      <AboutSection pacs={pacsData} />
-
-      <MapSection pacs={pacsData} />
-
-      <CTASection pacs={pacsData} />
-
-      <Footer pacs={pacsData} />
-    </main>
-  )
+  // Default to Template 1
+  return <Template1 pacs={pacsData} loanSchemes={loanSchemes} />
 }
 
 // Generate metadata for SEO

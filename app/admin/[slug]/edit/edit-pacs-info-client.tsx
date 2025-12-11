@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Leaf, Save } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -39,6 +40,7 @@ export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
     longitude: pacs.longitude || "",
     map_url: pacs.map_url || "",
     cover_image_url: pacs.cover_image_url || "",
+    template_type: pacs.template_type || 1,
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +74,7 @@ export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
           longitude: formData.longitude ? Number.parseFloat(formData.longitude) : null,
           map_url: formData.map_url,
           cover_image_url: formData.cover_image_url,
+          template_type: formData.template_type,
         }),
       })
 
@@ -119,6 +122,35 @@ export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <form onSubmit={handleSubmit}>
+          <Card className="border-green-100 mb-6">
+            <CardHeader>
+              <CardTitle className="text-green-900">Template Selection</CardTitle>
+              <CardDescription>Choose the design template for your PACS landing page</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="template_type">Landing Page Template</Label>
+                <Select
+                  value={formData.template_type.toString()}
+                  onValueChange={(value) => setFormData({ ...formData, template_type: Number.parseInt(value) })}
+                >
+                  <SelectTrigger id="template_type">
+                    <SelectValue placeholder="Select template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Template 1 - Classic Layout</SelectItem>
+                    <SelectItem value="2">Template 2 - Modern Design</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Template 1: Traditional sidebar layout with green theme
+                  <br />
+                  Template 2: Modern full-width design with blue gradient theme
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-green-100">
             <CardHeader>
               <CardTitle className="text-green-900">Basic Information</CardTitle>

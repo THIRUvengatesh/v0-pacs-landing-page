@@ -57,6 +57,7 @@ export async function PUT(request: Request) {
         longitude: updateData.longitude,
         map_url: updateData.map_url,
         cover_image_url: updateData.cover_image_url,
+        template_type: updateData.template_type,
         updated_at: new Date().toISOString(),
       })
       .eq("id", pacsId)
