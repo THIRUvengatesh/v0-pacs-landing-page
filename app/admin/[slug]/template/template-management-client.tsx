@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { ArrowLeft, Leaf, Check, ExternalLink, Eye, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -128,9 +130,52 @@ export function TemplateManagement({ pacs }: TemplateManagementProps) {
       <main className="container mx-auto px-4 py-8">
         <Card className="border-green-100 mb-6">
           <CardHeader>
-            <CardTitle className="text-green-900">Choose Your Template</CardTitle>
+            <CardTitle className="text-green-900">Template Selection</CardTitle>
+            <CardDescription>Choose the design template for your PACS landing page</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="template_type">Landing Page Template</Label>
+                <Select
+                  value={selectedTemplate.toString()}
+                  onValueChange={(value) => setSelectedTemplate(Number.parseInt(value))}
+                >
+                  <SelectTrigger id="template_type">
+                    <SelectValue placeholder="Select template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Template 1 - Classic Layout</SelectItem>
+                    <SelectItem value="2">Template 2 - Modern Design</SelectItem>
+                    <SelectItem value="3">Template 3 - Glassmorphism</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Template 1: Traditional sidebar layout with green theme
+                  <br />
+                  Template 2: Modern full-width design with blue gradient theme and animations
+                  <br />
+                  Template 3: Modern glassmorphism with purple/pink gradients and animations
+                </p>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSaveTemplate}
+                  disabled={loading || selectedTemplate === pacs.template_type}
+                  className="bg-green-700 hover:bg-green-800"
+                >
+                  {loading ? "Saving..." : "Apply Selected Template"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-green-100 mb-6">
+          <CardHeader>
+            <CardTitle className="text-green-900">Template Preview Gallery</CardTitle>
             <CardDescription>
-              Select a template design for your PACS landing page. Click to preview before applying.
+              Click on any template card to preview how it will look with your PACS data before applying
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -181,22 +226,6 @@ export function TemplateManagement({ pacs }: TemplateManagementProps) {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-
-            <div className="mt-8 flex justify-between items-center">
-              <div className="text-sm text-green-700">
-                Current template:{" "}
-                <span className="font-semibold">
-                  {templates.find((t) => t.id === pacs.template_type)?.name || "Classic Layout"}
-                </span>
-              </div>
-              <Button
-                onClick={handleSaveTemplate}
-                disabled={loading || selectedTemplate === pacs.template_type}
-                className="bg-green-700 hover:bg-green-800"
-              >
-                {loading ? "Saving..." : "Apply Template"}
-              </Button>
             </div>
           </CardContent>
         </Card>
