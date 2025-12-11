@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { HeroSection } from "@/components/pacs/hero-section"
 import { ContactCard } from "@/components/pacs/contact-card"
 import { ServicesSection } from "@/components/pacs/services-section"
@@ -18,8 +18,16 @@ interface PageProps {
   }>
 }
 
+const RESERVED_ROUTES = ["admin", "api", "auth", "super-admin", "login", "loans"]
+
 export default async function PACSPage({ params }: PageProps) {
   const { slug } = await params
+
+  if (RESERVED_ROUTES.includes(slug)) {
+    redirect(`/${slug}`)
+    return null
+  }
+
   const supabase = await createClient()
 
   // Fetch PACS data
