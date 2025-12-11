@@ -140,12 +140,15 @@ export function EditPACSInfo({ pacs }: EditPACSInfoProps) {
                   <SelectContent>
                     <SelectItem value="1">Template 1 - Classic Layout</SelectItem>
                     <SelectItem value="2">Template 2 - Modern Design</SelectItem>
+                    <SelectItem value="3">Template 3 - Glassmorphism</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
                   Template 1: Traditional sidebar layout with green theme
                   <br />
                   Template 2: Modern full-width design with blue gradient theme
+                  <br />
+                  Template 3: Modern glassmorphism with purple/pink gradients and animations
                 </p>
               </div>
             </CardContent>

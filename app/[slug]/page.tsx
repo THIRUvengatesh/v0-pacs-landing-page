@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
 import { Template1 } from "@/components/templates/template-1"
 import { Template2 } from "@/components/templates/template-2"
+import { Template3 } from "@/components/templates/template-3"
 import type { PACSWithRelations } from "@/lib/types/pacs"
 
 interface PageProps {
@@ -54,6 +55,10 @@ export default async function PACSPage({ params }: PageProps) {
   }
 
   const loanSchemes = loansRes.data || []
+
+  if (pacs.template_type === 3) {
+    return <Template3 pacs={pacsData} loanSchemes={loanSchemes} />
+  }
 
   if (pacs.template_type === 2) {
     return <Template2 pacs={pacsData} loanSchemes={loanSchemes} />
