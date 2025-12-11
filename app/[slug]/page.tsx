@@ -9,12 +9,16 @@ interface PageProps {
   params: Promise<{
     slug: string
   }>
+  searchParams: Promise<{
+    preview?: string
+  }>
 }
 
 const RESERVED_ROUTES = ["admin", "api", "auth", "super-admin", "login", "loans"]
 
-export default async function PACSPage({ params }: PageProps) {
+export default async function PACSPage({ params, searchParams }: PageProps) {
   const { slug } = await params
+  const { preview } = await searchParams
 
   if (RESERVED_ROUTES.includes(slug)) {
     redirect(`/${slug}`)
@@ -56,11 +60,13 @@ export default async function PACSPage({ params }: PageProps) {
 
   const loanSchemes = loansRes.data || []
 
-  if (pacs.template_type === 3) {
+  const templateType = preview ? Number.parseInt(preview) : pacs.template_type
+
+  if (templateType === 3) {
     return <Template3 pacs={pacsData} loanSchemes={loanSchemes} />
   }
 
-  if (pacs.template_type === 2) {
+  if (templateType === 2) {
     return <Template2 pacs={pacsData} loanSchemes={loanSchemes} />
   }
 

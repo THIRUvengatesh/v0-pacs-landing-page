@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Leaf, Check, ExternalLink } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ArrowLeft, Leaf, Check, ExternalLink, Eye, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { PACS } from "@/lib/types/pacs"
@@ -41,7 +42,19 @@ const templates = [
 export function TemplateManagement({ pacs }: TemplateManagementProps) {
   const router = useRouter()
   const [selectedTemplate, setSelectedTemplate] = useState(pacs.template_type || 1)
+  const [previewTemplate, setPreviewTemplate] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const handleTemplateClick = (templateId: number) => {
+    setPreviewTemplate(templateId)
+  }
+
+  const handleConfirmTemplate = () => {
+    if (previewTemplate) {
+      setSelectedTemplate(previewTemplate)
+      setPreviewTemplate(null)
+    }
+  }
 
   const handleSaveTemplate = async () => {
     setLoading(true)
@@ -117,7 +130,7 @@ export function TemplateManagement({ pacs }: TemplateManagementProps) {
           <CardHeader>
             <CardTitle className="text-green-900">Choose Your Template</CardTitle>
             <CardDescription>
-              Select a template design for your PACS landing page. You can change this anytime.
+              Select a template design for your PACS landing page. Click to preview before applying.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -130,9 +143,9 @@ export function TemplateManagement({ pacs }: TemplateManagementProps) {
                       ? "ring-2 ring-green-600 border-green-600"
                       : "border-green-100 hover:border-green-300"
                   }`}
-                  onClick={() => setSelectedTemplate(template.id)}
+                  onClick={() => handleTemplateClick(template.id)}
                 >
-                  <div className="relative">
+                  <div className="relative group">
                     <Image
                       src={template.preview || "/placeholder.svg"}
                       alt={template.name}
@@ -140,6 +153,12 @@ export function TemplateManagement({ pacs }: TemplateManagementProps) {
                       height={300}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-t-lg">
+                      <Button size="sm" className="bg-white text-green-700 hover:bg-green-50">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview Template
+                      </Button>
+                    </div>
                     {selectedTemplate === template.id && (
                       <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-2">
                         <Check className="h-4 w-4" />
@@ -225,6 +244,56 @@ export function TemplateManagement({ pacs }: TemplateManagementProps) {
           </CardContent>
         </Card>
       </main>
+
+      <Dialog open={previewTemplate !== null} onOpenChange={() => setPreviewTemplate(null)}>
+        <DialogContent className="max-w-7xl h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-4 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-2xl text-green-900">
+                  {templates.find((t) => t.id === previewTemplate)?.name} Preview
+                </DialogTitle>
+                <DialogDescription>Preview how your PACS page will look with this template</DialogDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setPreviewTemplate(null)}
+                className="text-green-700 hover:bg-green-50"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden p-6 pt-0">
+            <div className="h-full rounded-lg border border-green-200 overflow-hidden bg-white shadow-lg">
+              <iframe
+                src={`/${pacs.slug}?preview=${previewTemplate}`}
+                className="w-full h-full"
+                title="Template Preview"
+              />
+            </div>
+          </div>
+          <div className="p-6 pt-4 border-t flex justify-between items-center bg-green-50">
+            <p className="text-sm text-green-700">
+              Click "Select This Template" to choose this design for your PACS page
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewTemplate(null)}
+                className="border-green-200 text-green-700 hover:bg-green-50"
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmTemplate} className="bg-green-700 hover:bg-green-800">
+                <Check className="h-4 w-4 mr-2" />
+                Select This Template
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
