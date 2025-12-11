@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
 import { TemplateManagement } from "./template-management-client"
+import { getSession } from "@/lib/auth/session"
 
 interface TemplatePageProps {
   params: Promise<{
@@ -11,16 +12,20 @@ interface TemplatePageProps {
 
 export default async function TemplatePage({ params }: TemplatePageProps) {
   const { slug } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
   const cookieStore = await cookies()
   const sessionCookie = cookieStore.get("session")
 
   if (!sessionCookie) {
-    redirect("/auth/login")
+    //redirect("/auth/login")
   }
 
-  const session = JSON.parse(sessionCookie.value)
-  const userId = session.user_id
+  //const session = JSON.parse(sessionCookie.value)
+  const session = await getSession()
+  if (!session) {
+    redirect("/auth/login")
+  }
+  const userId = session.userId
 
   // Check if user has access to this PACS
   const { data: assignment } = await supabase
