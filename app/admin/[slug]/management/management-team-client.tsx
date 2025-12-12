@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Leaf, User, Plus, Trash2, Users, Phone, Mail, Pencil, Twitch as Switch } from "lucide-react"
+import { ArrowLeft, Leaf, User, Plus, Trash2, Users, Phone, Mail, Pencil } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 //import { createClient as createBrowserClient } from "@/lib/supabase/client"
@@ -106,7 +107,7 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
     try {
       const displayPriority = newMemberData.is_leadership ? 10 : 100
 
-      const { data, error } = await fetch("/api/admin/pacs-team-members", {
+      const response  = await fetch("/api/admin/pacs-team-members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,6 +124,8 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
           display_priority: displayPriority,
         }),
       })
+
+      const { data, error } = await response.json();
 
       const result = await data.json()
 
@@ -161,7 +164,7 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
     try {
       const displayPriority = editingMember.is_leadership ? 10 : 100
 
-      const { data, error } = await fetch("/api/admin/pacs-team-members", {
+      const response = await fetch("/api/admin/pacs-team-members", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -177,6 +180,8 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
           updated_at: new Date().toISOString(),
         }),
       })
+
+      const { data, error } = await response.json();
 
       const result = await data.json()
 
@@ -361,7 +366,7 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
             )}
           </div>
 
-          {showTeamSection && (
+          { (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div>

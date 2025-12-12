@@ -89,15 +89,15 @@ export function ManagementSection({ pacs, teamMembers = [], showTeamSection = tr
                           <User className="h-6 w-6 text-green-700" />
                         </div>
                         <p className="text-xs text-muted-foreground mb-1">{member.position}</p>
-                        <h4 className="font-semibold text-green-900 text-sm mb-2">{member.name}</h4>
+                        <h4 className="font-semibold text-green-900 text-sm mb-2">{member.member_name}</h4>
                         <div className="space-y-1">
-                          {member.phone && (
+                          {member.contact_phone && (
                             <a
-                              href={`tel:${member.phone}`}
+                              href={`tel:${member.contact_phone}`}
                               className="flex items-center justify-center gap-1 text-xs text-green-600 hover:text-green-700"
                             >
                               <Phone className="h-3 w-3" />
-                              {member.phone}
+                              {member.contact_phone}
                             </a>
                           )}
                         </div>
@@ -115,7 +115,7 @@ export function ManagementSection({ pacs, teamMembers = [], showTeamSection = tr
               { role: "Secretary", name: pacs.secretary_name, contact: pacs.secretary_contact },
               { role: "Manager", name: pacs.manager_name, contact: pacs.manager_contact },
             ]
-              .filter((member) => member.name)
+              .filter((member) => member.member_name)
               .map((member) => (
                 <Card key={member.role} className="border-green-100 hover:shadow-md transition-shadow">
                   <CardContent className="p-6 text-center">

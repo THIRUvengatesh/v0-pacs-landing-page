@@ -79,3 +79,31 @@ export async function PUT(request: Request) {
     )
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const { id, show_team_section } = await request.json();
+    if (!id) {
+      return NextResponse.json({ error: "MISSING PACS ID " }, { status: 400 });
+    }
+    const {data, error} = await (await createClient())
+      .from("pacs")
+      .update({ show_team_section })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Database error:", error);
+      return NextResponse.json({ error: `Database error: ${error.message}` }, { status: 500 });
+    }
+    return NextResponse.json(data, { status: 200 });
+  }
+  catch (error) {
+    console.error("Error in PACS update:", error);
+    return NextResponse.json(
+      { error : "Failed to update PACS" },
+      { status: 500 },
+    );
+  }
+}
