@@ -49,15 +49,15 @@ export function ManagementSection({ pacs, teamMembers = [] }: ManagementSectionP
                           <User className="h-8 w-8 text-green-700" />
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">{member.position}</p>
-                        <h3 className="font-semibold text-green-900 mb-3">{member.name}</h3>
+                        <h3 className="font-semibold text-green-900 mb-3">{member.member_name}</h3>
                         <div className="space-y-2">
-                          {member.phone && (
+                          {member.contact_phone && (
                             <a
-                              href={`tel:${member.phone}`}
+                              href={`tel:${member.contact_phone}`}
                               className="flex items-center justify-center gap-2 text-sm text-green-600 hover:text-green-700"
                             >
                               <Phone className="h-3 w-3" />
-                              {member.phone}
+                              {member.contact_phone}
                             </a>
                           )}
                           {member.email && (
