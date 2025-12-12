@@ -14,9 +14,10 @@ interface TeamMember {
 
 interface Template3ManagementProps {
   teamMembers: TeamMember[]
+  showTeamSection?: boolean // Added showTeamSection prop
 }
 
-export function Template3Management({ teamMembers }: Template3ManagementProps) {
+export function Template3Management({ teamMembers, showTeamSection = true }: Template3ManagementProps) {
   const leadershipTeam = teamMembers.filter((member) => member.is_leadership)
   const otherTeam = teamMembers.filter((member) => !member.is_leadership)
 
@@ -30,7 +31,7 @@ export function Template3Management({ teamMembers }: Template3ManagementProps) {
           </p>
         </div>
 
-        {/* Leadership Team */}
+        {/* Leadership Team - Always visible */}
         {leadershipTeam.length > 0 && (
           <div className="mb-16">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -84,8 +85,7 @@ export function Template3Management({ teamMembers }: Template3ManagementProps) {
           </div>
         )}
 
-        {/* Other Team Members */}
-        {otherTeam.length > 0 && (
+        {showTeamSection && otherTeam.length > 0 && (
           <div>
             <h3 className="text-3xl font-bold text-white mb-10 text-center">Our Team</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">

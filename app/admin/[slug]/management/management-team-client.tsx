@@ -1,15 +1,15 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Leaf, User, Plus, Trash2, Users, Phone, Mail, Pencil } from "lucide-react"
+import { ArrowLeft, Leaf, User, Plus, Trash2, Users, Phone, Mail, Pencil, Twitch as Switch } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import type { PACS } from "@/lib/types/pacs"
+import { createClient as createBrowserClient } from "@/lib/supabase/client"
+import { toast } from "@/components/ui/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -47,18 +47,19 @@ interface UnifiedTeamMember {
 }
 
 interface ManagementTeamProps {
-  pacs: PACS
-  teamMembers: TeamMember[]
+  pacsId: string
+  initialTeamMembers: TeamMember[]
 }
 
-export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: ManagementTeamProps) {
+export default function ManagementTeamClient({ pacsId, initialTeamMembers }: ManagementTeamProps) {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
   const [isAddingLeadership, setIsAddingLeadership] = useState(false)
+  const [showTeamSection, setShowTeamSection] = useState(true)
+  const [loadingVisibility, setLoadingVisibility] = useState(true)
 
   const [newMemberData, setNewMemberData] = useState({
     member_name: "",
@@ -75,6 +76,24 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
     .sort((a, b) => a.display_priority - b.display_priority)
   const regularMembers = teamMembers.filter((m) => !m.is_leadership).sort((a, b) => a.display_order - b.display_order)
 
+  useEffect(() => {
+    const fetchVisibility = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      )
+
+      const { data, error } = await supabase.from("pacs").select("show_team_section").eq("id", pacsId).single()
+
+      if (!error && data) {
+        setShowTeamSection(data.show_team_section ?? true)
+      }
+      setLoadingVisibility(false)
+    }
+
+    fetchVisibility()
+  }, [pacsId])
+
   const handleAddMember = async () => {
     if (!newMemberData.member_name || !newMemberData.position) {
       alert("Please fill in required fields (Name and Position)")
@@ -85,29 +104,29 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
     try {
       const displayPriority = newMemberData.is_leadership ? 10 : 100
 
-      const { data, error } = await supabase
-        .from("pacs_team_members")
-        .insert([
-          {
-            pacs_id: pacs.id,
-            member_name: newMemberData.member_name,
-            position: newMemberData.position,
-            contact_phone: newMemberData.contact_phone || "",
-            email: newMemberData.email || "",
-            responsibilities: newMemberData.responsibilities || "",
-            joining_date: newMemberData.joining_date || null,
-            display_order: teamMembers.length + 1,
-            is_active: true,
-            is_leadership: newMemberData.is_leadership,
-            display_priority: displayPriority,
-          },
-        ])
-        .select()
-        .single()
+      const { data, error } = await fetch("/api/admin/pacs-team-members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pacs_id: pacsId,
+          member_name: newMemberData.member_name,
+          position: newMemberData.position,
+          contact_phone: newMemberData.contact_phone || "",
+          email: newMemberData.email || "",
+          responsibilities: newMemberData.responsibilities || "",
+          joining_date: newMemberData.joining_date || null,
+          display_order: teamMembers.length + 1,
+          is_active: true,
+          is_leadership: newMemberData.is_leadership,
+          display_priority: displayPriority,
+        }),
+      })
+
+      const result = await data.json()
 
       if (error) throw error
 
-      setTeamMembers([...teamMembers, data])
+      setTeamMembers([...teamMembers, result])
       setNewMemberData({
         member_name: "",
         position: "",
@@ -140,9 +159,11 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
     try {
       const displayPriority = editingMember.is_leadership ? 10 : 100
 
-      const { data, error } = await supabase
-        .from("pacs_team_members")
-        .update({
+      const { data, error } = await fetch("/api/admin/pacs-team-members", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingMember.id,
           member_name: editingMember.member_name,
           position: editingMember.position,
           contact_phone: editingMember.contact_phone,
@@ -152,14 +173,14 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
           is_leadership: editingMember.is_leadership,
           display_priority: displayPriority,
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", editingMember.id)
-        .select()
-        .single()
+        }),
+      })
+
+      const result = await data.json()
 
       if (error) throw error
 
-      setTeamMembers(teamMembers.map((m) => (m.id === data.id ? data : m)))
+      setTeamMembers(teamMembers.map((m) => (m.id === result.id ? result : m)))
       setEditingMember(null)
       alert("Team member updated successfully!")
       router.refresh()
@@ -177,9 +198,13 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
 
     setLoading(true)
     try {
-      const { error } = await supabase.from("pacs_team_members").delete().eq("id", member.id)
+      const response = await fetch("/api/admin/pacs-team-members", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: member.id }),
+      })
 
-      if (error) throw error
+      if (!response.ok) throw new Error("Failed to delete member")
 
       setTeamMembers(teamMembers.filter((m) => m.id !== member.id))
       alert(`${memberType.charAt(0).toUpperCase() + memberType.slice(1)} deleted successfully!`)
@@ -192,12 +217,43 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
     }
   }
 
+  const handleToggleVisibility = async (visible: boolean) => {
+    setLoadingVisibility(true)
+    try {
+      const response = await fetch("/api/admin/pacs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: pacsId,
+          show_team_section: visible,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update visibility")
+
+      setShowTeamSection(visible)
+      toast({
+        title: "Success",
+        description: `Team section ${visible ? "shown" : "hidden"} successfully`,
+      })
+    } catch (error) {
+      console.error("Error updating visibility:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update team section visibility",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingVisibility(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
       <header className="border-b border-green-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Link href={`/admin/${pacs.slug}`}>
+            <Link href={`/admin/${pacsId}`}>
               <Button variant="ghost" size="sm" className="text-green-700 hover:bg-green-50">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
@@ -209,7 +265,7 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
               </div>
               <div>
                 <h1 className="text-lg font-bold text-green-900">Management Team</h1>
-                <p className="text-xs text-green-600">{pacs.name}</p>
+                <p className="text-xs text-green-600">{pacsId}</p>
               </div>
             </div>
           </div>
@@ -303,90 +359,106 @@ export function ManagementTeam({ pacs, teamMembers: initialTeamMembers }: Manage
             )}
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-green-900">Additional Team Members</h2>
-                <p className="text-sm text-green-600 mt-1">Other staff and committee members</p>
+          {showTeamSection && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-green-900">Our Team</h2>
+                  <p className="text-sm text-green-600 mt-1">Manage additional team members and staff</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 mr-4">
+                    <Label htmlFor="team-visibility" className="text-sm font-medium">
+                      Show on landing page
+                    </Label>
+                    <Switch
+                      id="team-visibility"
+                      checked={showTeamSection}
+                      onCheckedChange={handleToggleVisibility}
+                      disabled={loadingVisibility}
+                      className="data-[state=checked]:bg-green-600"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setIsAddingLeadership(false)
+                      setNewMemberData({ ...newMemberData, is_leadership: false })
+                      setIsAddDialogOpen(true)
+                    }}
+                    className="bg-green-700 hover:bg-green-800"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Team Member
+                  </Button>
+                </div>
               </div>
-              <Button
-                onClick={() => {
-                  setIsAddingLeadership(false)
-                  setNewMemberData({ ...newMemberData, is_leadership: false })
-                  setIsAddDialogOpen(true)
-                }}
-                className="bg-green-700 hover:bg-green-800"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Team Member
-              </Button>
-            </div>
 
-            {regularMembers.length === 0 ? (
-              <Card className="border-green-100">
-                <CardContent className="py-12 text-center">
-                  <User className="h-12 w-12 text-green-300 mx-auto mb-4" />
-                  <p className="text-green-600">No additional team members added yet</p>
-                  <p className="text-sm text-green-500 mt-1">Click "Add Team Member" to get started</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {regularMembers.map((member) => (
-                  <Card key={member.id} className="border-green-100">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                              <User className="h-6 w-6 text-green-700" />
+              {regularMembers.length === 0 ? (
+                <Card className="border-green-100">
+                  <CardContent className="py-12 text-center">
+                    <User className="h-12 w-12 text-green-300 mx-auto mb-4" />
+                    <p className="text-green-600">No additional team members added yet</p>
+                    <p className="text-sm text-green-500 mt-1">Click "Add Team Member" to get started</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {regularMembers.map((member) => (
+                    <Card key={member.id} className="border-green-100">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <User className="h-6 w-6 text-green-700" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-green-900">{member.member_name}</h3>
+                                <p className="text-sm text-green-600">{member.position}</p>
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="font-semibold text-green-900">{member.member_name}</h3>
-                              <p className="text-sm text-green-600">{member.position}</p>
-                            </div>
+                            {member.contact_phone && (
+                              <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
+                                <Phone className="h-4 w-4" />
+                                {member.contact_phone}
+                              </div>
+                            )}
+                            {member.email && (
+                              <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
+                                <Mail className="h-4 w-4" />
+                                {member.email}
+                              </div>
+                            )}
+                            {member.responsibilities && (
+                              <p className="text-sm text-green-600 mt-2">{member.responsibilities}</p>
+                            )}
                           </div>
-                          {member.contact_phone && (
-                            <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
-                              <Phone className="h-4 w-4" />
-                              {member.contact_phone}
-                            </div>
-                          )}
-                          {member.email && (
-                            <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
-                              <Mail className="h-4 w-4" />
-                              {member.email}
-                            </div>
-                          )}
-                          {member.responsibilities && (
-                            <p className="text-sm text-green-600 mt-2">{member.responsibilities}</p>
-                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditMember(member)}
+                              className="border-green-200 text-green-700 hover:bg-green-50"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteMember(member)}
+                              className="border-red-200 text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditMember(member)}
-                            className="border-green-200 text-green-700 hover:bg-green-50"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteMember(member)}
-                            className="border-red-200 text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
