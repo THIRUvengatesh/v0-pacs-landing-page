@@ -22,6 +22,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
+import type { PACS } from "@/lib/types/pacs"
+interface manageProps {
+  pacs: PACS
+}
 interface TeamMember {
   id: string
   member_name: string
@@ -51,10 +55,11 @@ interface UnifiedTeamMember {
 
 interface ManagementTeamProps {
   pacsId: string
+  pacsSlug: string
   initialTeamMembers: TeamMember[]
 }
 
-export default function ManagementTeamClient({ pacsId, initialTeamMembers }: ManagementTeamProps) {
+export default function ManagementTeamClient({ pacsId,pacsSlug, initialTeamMembers }: ManagementTeamProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers)
@@ -260,7 +265,7 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
       <header className="border-b border-green-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Link href={`/admin/${pacsId}`}>
+            <Link href={`/admin/${pacsSlug}`}>
               <Button variant="ghost" size="sm" className="text-green-700 hover:bg-green-50">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back

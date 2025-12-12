@@ -31,5 +31,5 @@ export default async function ManagementTeamPage({ params }: { params: Promise<{
     .order("display_priority", { ascending: true })
     .order("display_order", { ascending: true })
 
-  return <ManagementTeamClient pacsId={pacs.id} initialTeamMembers={teamMembers || []} />
+  return <ManagementTeamClient pacsId={pacs.id} pacsSlug={slug} initialTeamMembers={teamMembers || []} />
 }
