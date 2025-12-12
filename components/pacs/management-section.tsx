@@ -14,9 +14,10 @@ interface TeamMember {
 interface ManagementSectionProps {
   pacs: PACS
   teamMembers?: TeamMember[]
+  showTeamSection?: boolean
 }
 
-export function ManagementSection({ pacs, teamMembers = [] }: ManagementSectionProps) {
+export function ManagementSection({ pacs, teamMembers = [], showTeamSection = true }: ManagementSectionProps) {
   const leadershipTeam = teamMembers.filter((member) => member.is_leadership)
   const otherTeam = teamMembers.filter((member) => !member.is_leadership)
 
@@ -37,7 +38,7 @@ export function ManagementSection({ pacs, teamMembers = [] }: ManagementSectionP
 
         {hasNewData ? (
           <div className="space-y-12">
-            {/* Leadership Team */}
+            {/* Leadership Team - Always visible */}
             {leadershipTeam.length > 0 && (
               <div>
                 <h3 className="text-xl font-semibold text-green-900 mb-6 text-center">Leadership Team</h3>
@@ -77,8 +78,7 @@ export function ManagementSection({ pacs, teamMembers = [] }: ManagementSectionP
               </div>
             )}
 
-            {/* Other Team Members */}
-            {otherTeam.length > 0 && (
+            {showTeamSection && otherTeam.length > 0 && (
               <div>
                 <h3 className="text-xl font-semibold text-green-900 mb-6 text-center">Our Team</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { ManagementTeam } from "./management-team-client"
+import ManagementTeamClient from "./management-team-client"
 import { getSession } from "@/lib/auth/session"
 
 export default async function ManagementTeamPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -31,5 +31,5 @@ export default async function ManagementTeamPage({ params }: { params: Promise<{
     .order("display_priority", { ascending: true })
     .order("display_order", { ascending: true })
 
-  return <ManagementTeam pacs={pacs} teamMembers={teamMembers || []} />
+  return <ManagementTeamClient pacsId={pacs.id} initialTeamMembers={teamMembers || []} />
 }

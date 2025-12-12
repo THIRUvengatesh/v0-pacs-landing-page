@@ -79,19 +79,37 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
 
   if (templateType === 3) {
     return (
-      <Template3 pacs={pacsData} loanSchemes={loanSchemes} depositSchemes={depositSchemes} teamMembers={teamMembers} />
+      <Template3
+        pacs={pacsData}
+        loanSchemes={loanSchemes}
+        depositSchemes={depositSchemes}
+        teamMembers={teamMembers}
+        showTeamSection={pacs.show_team_section ?? true}
+      />
     )
   }
 
   if (templateType === 2) {
     return (
-      <Template2 pacs={pacsData} loanSchemes={loanSchemes} depositSchemes={depositSchemes} teamMembers={teamMembers} />
+      <Template2
+        pacs={pacsData}
+        loanSchemes={loanSchemes}
+        depositSchemes={depositSchemes}
+        teamMembers={teamMembers}
+        showTeamSection={pacs.show_team_section ?? true}
+      />
     )
   }
 
   // Default to Template 1
   return (
-    <Template1 pacs={pacsData} loanSchemes={loanSchemes} depositSchemes={depositSchemes} teamMembers={teamMembers} />
+    <Template1
+      pacs={pacsData}
+      loanSchemes={loanSchemes}
+      depositSchemes={depositSchemes}
+      teamMembers={teamMembers}
+      showTeamSection={pacs.show_team_section ?? true}
+    />
   )
 }
 

@@ -6,17 +6,24 @@ import { Template3Machinery } from "@/components/templates/template-3/machinery"
 import { Template3Gallery } from "@/components/templates/template-3/gallery"
 import { Template3Contact } from "@/components/templates/template-3/contact"
 import { Template3Footer } from "@/components/templates/template-3/footer"
-import { Template3Management } from "@/components/templates/template-3/management" // Added management import
+import { Template3Management } from "@/components/templates/template-3/management"
 import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 
 interface Template3Props {
   pacs: PACSWithRelations
   loanSchemes: LoanScheme[]
   depositSchemes: any[]
-  teamMembers?: any[] // Added teamMembers prop
+  teamMembers?: any[]
+  showTeamSection?: boolean // Added showTeamSection prop
 }
 
-export function Template3({ pacs, loanSchemes, depositSchemes, teamMembers = [] }: Template3Props) {
+export function Template3({
+  pacs,
+  loanSchemes,
+  depositSchemes,
+  teamMembers = [],
+  showTeamSection = true,
+}: Template3Props) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 relative overflow-hidden">
       {/* Animated background elements */}
@@ -40,7 +47,7 @@ export function Template3({ pacs, loanSchemes, depositSchemes, teamMembers = [] 
       />
       {loanSchemes.length > 0 && <Template3Loans loans={loanSchemes} pacsSlug={pacs.slug} />}
       <Template3About pacs={pacs} />
-      {teamMembers.length > 0 && <Template3Management teamMembers={teamMembers} />} {/* Added management section */}
+      {teamMembers.length > 0 && <Template3Management teamMembers={teamMembers} showTeamSection={showTeamSection} />}
       {pacs.machinery && pacs.machinery.length > 0 && <Template3Machinery machinery={pacs.machinery} />}
       {pacs.gallery && pacs.gallery.length > 0 && <Template3Gallery gallery={pacs.gallery} pacsName={pacs.name} />}
       <Template3Contact pacs={pacs} />

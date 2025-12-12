@@ -14,9 +14,10 @@ interface TeamMember {
 
 interface Template2ManagementProps {
   teamMembers: TeamMember[]
+  showTeamSection?: boolean // Added showTeamSection prop
 }
 
-export function Template2Management({ teamMembers }: Template2ManagementProps) {
+export function Template2Management({ teamMembers, showTeamSection = true }: Template2ManagementProps) {
   const leadershipTeam = teamMembers.filter((member) => member.is_leadership)
   const otherTeam = teamMembers.filter((member) => !member.is_leadership)
 
@@ -34,7 +35,7 @@ export function Template2Management({ teamMembers }: Template2ManagementProps) {
           </p>
         </div>
 
-        {/* Leadership Team */}
+        {/* Leadership Team - Always visible */}
         {leadershipTeam.length > 0 && (
           <div className="mb-12">
             <h3 className="text-2xl font-semibold text-gray-800 mb-8 text-center">Leadership</h3>
@@ -80,8 +81,7 @@ export function Template2Management({ teamMembers }: Template2ManagementProps) {
           </div>
         )}
 
-        {/* Other Team Members */}
-        {otherTeam.length > 0 && (
+        {showTeamSection && otherTeam.length > 0 && (
           <div>
             <h3 className="text-2xl font-semibold text-gray-800 mb-8 text-center">Team Members</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">

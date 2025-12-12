@@ -14,10 +14,17 @@ interface Template1Props {
   pacs: PACSWithRelations
   loanSchemes: LoanScheme[]
   depositSchemes: any[]
-  teamMembers?: any[] // Added teamMembers prop
+  teamMembers?: any[]
+  showTeamSection?: boolean // Added showTeamSection prop
 }
 
-export function Template1({ pacs, loanSchemes, depositSchemes, teamMembers = [] }: Template1Props) {
+export function Template1({
+  pacs,
+  loanSchemes,
+  depositSchemes,
+  teamMembers = [],
+  showTeamSection = true,
+}: Template1Props) {
   const loanSchemesCount = loanSchemes.length
   const depositSchemesCount = depositSchemes.length // Added deposit schemes count
 
@@ -50,7 +57,7 @@ export function Template1({ pacs, loanSchemes, depositSchemes, teamMembers = [] 
 
       {pacs.machinery && pacs.machinery.length > 0 && <MachinerySection machinery={pacs.machinery} />}
 
-      <ManagementSection pacs={pacs} teamMembers={teamMembers} />
+      <ManagementSection pacs={pacs} teamMembers={teamMembers} showTeamSection={showTeamSection} />
 
       {pacs.gallery && pacs.gallery.length > 0 && <GallerySection gallery={pacs.gallery} />}
 
