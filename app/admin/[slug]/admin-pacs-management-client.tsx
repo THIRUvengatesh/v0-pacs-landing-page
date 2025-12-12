@@ -17,6 +17,7 @@ import {
   PiggyBank,
   ImageIcon,
   Layout,
+  Store,
 } from "lucide-react"
 import Link from "next/link"
 import type { PACS } from "@/lib/types/pacs"
@@ -135,6 +136,13 @@ export function AdminPACSManagement({ pacs, userRole }: AdminPACSManagementProps
             >
               <ImageIcon className="h-4 w-4 mr-2" />
               Gallery
+            </TabsTrigger>
+            <TabsTrigger
+              value="pds-shops"
+              className="data-[state=active]:bg-green-100 data-[state=active]:text-green-900"
+            >
+              <Store className="h-4 w-4 mr-2" />
+              PDS Shops
             </TabsTrigger>
           </TabsList>
 
@@ -297,6 +305,20 @@ export function AdminPACSManagement({ pacs, userRole }: AdminPACSManagementProps
               <CardContent>
                 <Link href={`/admin/${pacs.slug}/gallery`}>
                   <Button className="bg-green-700 hover:bg-green-800">Manage Gallery</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pds-shops">
+            <Card className="border-green-100">
+              <CardHeader>
+                <CardTitle className="text-green-900">PDS Shops Management</CardTitle>
+                <CardDescription>Manage Public Distribution System shops</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href={`/admin/${pacs.slug}/pds-shops`}>
+                  <Button className="bg-green-700 hover:bg-green-800">Manage PDS Shops</Button>
                 </Link>
               </CardContent>
             </Card>

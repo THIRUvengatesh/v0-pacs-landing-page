@@ -15,6 +15,7 @@ interface Template2Props {
   depositSchemes: any[]
   teamMembers?: any[]
   showTeamSection?: boolean // Added showTeamSection prop
+  pdsShopsCount?: number // Added pdsShopsCount prop
 }
 
 export function Template2({
@@ -23,6 +24,7 @@ export function Template2({
   depositSchemes,
   teamMembers = [],
   showTeamSection = true,
+  pdsShopsCount = 0, // Added pdsShopsCount with default
 }: Template2Props) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -32,6 +34,7 @@ export function Template2({
         pacsSlug={pacs.slug}
         loanSchemesCount={loanSchemes.length}
         depositSchemesCount={depositSchemes.length}
+        pdsShopsCount={pdsShopsCount}
       />
       {loanSchemes.length > 0 && <Template2Loans loans={loanSchemes} pacsSlug={pacs.slug} />}
       <Template2About pacs={pacs} />

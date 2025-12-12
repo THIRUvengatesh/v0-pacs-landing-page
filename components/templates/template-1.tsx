@@ -16,6 +16,7 @@ interface Template1Props {
   depositSchemes: any[]
   teamMembers?: any[]
   showTeamSection?: boolean // Added showTeamSection prop
+  pdsShopsCount?: number // Added pdsShopsCount prop
 }
 
 export function Template1({
@@ -24,6 +25,7 @@ export function Template1({
   depositSchemes,
   teamMembers = [],
   showTeamSection = true,
+  pdsShopsCount = 0, // Added pdsShopsCount with default
 }: Template1Props) {
   const loanSchemesCount = loanSchemes.length
   const depositSchemesCount = depositSchemes.length // Added deposit schemes count
@@ -42,6 +44,7 @@ export function Template1({
                   pacsSlug={pacs.slug}
                   loanSchemesCount={loanSchemesCount}
                   depositSchemesCount={depositSchemesCount}
+                  pdsShopsCount={pdsShopsCount}
                 />
               </div>
             )}

@@ -11,6 +11,7 @@ interface ServicesSectionProps {
   pacsSlug: string
   loanSchemesCount?: number
   depositSchemesCount?: number
+  pdsShopsCount?: number // Add pdsShopsCount prop
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -27,6 +28,7 @@ export function ServicesSection({
   pacsSlug,
   loanSchemesCount = 0,
   depositSchemesCount = 0,
+  pdsShopsCount = 0, // Add pdsShopsCount
 }: ServicesSectionProps) {
   const getIcon = (iconName: string | null) => {
     if (!iconName) return Leaf
@@ -125,27 +127,32 @@ export function ServicesSection({
             </Link>
           )}
 
-          <Card className="border-green-100 hover:shadow-lg hover:border-green-300 transition-all duration-300 h-full cursor-pointer group">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-green-100 rounded-lg shrink-0 group-hover:bg-green-200 transition-colors">
-                  <Store className="h-6 w-6 text-green-700" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-green-900 mb-2 group-hover:text-green-700 transition-colors">
-                    PDS Shops
-                  </h3>
-                  <p className="text-sm text-muted-foreground text-pretty mb-3">
-                    Access essential commodities through our Public Distribution System shops at subsidized rates
-                  </p>
-                  <div className="flex items-center text-sm text-green-600 font-medium group-hover:text-green-700">
-                    Learn more
-                    <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          {pdsShopsCount > 0 && (
+            <Link href={`/${pacsSlug}/pds-shops`}>
+              <Card className="border-green-100 hover:shadow-lg hover:border-green-300 transition-all duration-300 h-full cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-orange-100 rounded-lg shrink-0 group-hover:bg-orange-200 transition-colors">
+                      <Store className="h-6 w-6 text-orange-700" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-green-900 mb-2 group-hover:text-green-700 transition-colors">
+                        PDS Shops
+                      </h3>
+                      <p className="text-sm text-muted-foreground text-pretty mb-3">
+                        {pdsShopsCount} PDS shop{pdsShopsCount !== 1 ? "s" : ""} providing essential commodities through
+                        the Public Distribution System
+                      </p>
+                      <div className="flex items-center text-sm text-green-600 font-medium group-hover:text-green-700">
+                        View shops
+                        <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
         </div>
       </div>
     </section>

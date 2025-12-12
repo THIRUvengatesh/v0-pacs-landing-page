@@ -34,35 +34,38 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
     notFound()
   }
 
-  const [servicesRes, machineryRes, galleryRes, loansRes, depositsRes, teamMembersRes] = await Promise.all([
-    supabase
-      .from("pacs_services")
-      .select("*")
-      .eq("pacs_id", pacs.id)
-      .eq("is_visible", true)
-      .order("created_at", { ascending: true }),
-    supabase.from("pacs_machinery").select("*").eq("pacs_id", pacs.id).order("machinery_name", { ascending: true }),
-    supabase.from("pacs_gallery").select("*").eq("pacs_id", pacs.id).order("display_order", { ascending: true }),
-    supabase
-      .from("pacs_loan_schemes")
-      .select("*")
-      .eq("pacs_id", pacs.id)
-      .eq("is_active", true)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("pacs_deposit_schemes")
-      .select("*")
-      .eq("pacs_id", pacs.id)
-      .eq("is_active", true)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("pacs_team_members")
-      .select("*")
-      .eq("pacs_id", pacs.id)
-      .eq("is_active", true)
-      .order("display_priority", { ascending: true })
-      .order("created_at", { ascending: true }),
-  ])
+  const [servicesRes, machineryRes, galleryRes, loansRes, depositsRes, teamMembersRes, pdsShopsRes] = await Promise.all(
+    [
+      supabase
+        .from("pacs_services")
+        .select("*")
+        .eq("pacs_id", pacs.id)
+        .eq("is_visible", true)
+        .order("created_at", { ascending: true }),
+      supabase.from("pacs_machinery").select("*").eq("pacs_id", pacs.id).order("machinery_name", { ascending: true }),
+      supabase.from("pacs_gallery").select("*").eq("pacs_id", pacs.id).order("display_order", { ascending: true }),
+      supabase
+        .from("pacs_loan_schemes")
+        .select("*")
+        .eq("pacs_id", pacs.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("pacs_deposit_schemes")
+        .select("*")
+        .eq("pacs_id", pacs.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("pacs_team_members")
+        .select("*")
+        .eq("pacs_id", pacs.id)
+        .eq("is_active", true)
+        .order("display_priority", { ascending: true })
+        .order("created_at", { ascending: true }),
+      supabase.from("pacs_pds_shops").select("id").eq("pacs_id", pacs.id).eq("is_active", true),
+    ],
+  )
 
   const pacsData: PACSWithRelations = {
     ...pacs,
@@ -74,6 +77,7 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
   const loanSchemes = loansRes.data || []
   const depositSchemes = depositsRes.data || []
   const teamMembers = teamMembersRes.data || []
+  const pdsShopsCount = pdsShopsRes.data?.length || 0
 
   const templateType = preview ? Number.parseInt(preview) : pacs.template_type
 
@@ -85,6 +89,7 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
         depositSchemes={depositSchemes}
         teamMembers={teamMembers}
         showTeamSection={pacs.show_team_section ?? true}
+        pdsShopsCount={pdsShopsCount}
       />
     )
   }
@@ -97,6 +102,7 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
         depositSchemes={depositSchemes}
         teamMembers={teamMembers}
         showTeamSection={pacs.show_team_section ?? true}
+        pdsShopsCount={pdsShopsCount}
       />
     )
   }
@@ -109,6 +115,7 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
       depositSchemes={depositSchemes}
       teamMembers={teamMembers}
       showTeamSection={pacs.show_team_section ?? true}
+      pdsShopsCount={pdsShopsCount}
     />
   )
 }
