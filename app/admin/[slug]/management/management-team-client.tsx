@@ -8,7 +8,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Leaf, User, Plus, Trash2, Users, Phone, Mail, Pencil, Twitch as Switch } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { createClient as createBrowserClient } from "@/lib/supabase/client"
+//import { createClient as createBrowserClient } from "@/lib/supabase/client"
+import { createBrowserClient } from "@supabase/ssr"
+
 import { toast } from "@/components/ui/use-toast"
 import {
   Dialog,
@@ -84,7 +86,7 @@ export default function ManagementTeamClient({ pacsId, initialTeamMembers }: Man
       )
 
       const { data, error } = await supabase.from("pacs").select("show_team_section").eq("id", pacsId).single()
-
+      
       if (!error && data) {
         setShowTeamSection(data.show_team_section ?? true)
       }
