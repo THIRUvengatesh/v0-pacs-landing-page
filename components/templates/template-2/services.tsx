@@ -2,14 +2,14 @@
 
 import type { Service } from "@/lib/types/pacs"
 import { Card, CardContent } from "@/components/ui/card"
-import { Leaf, Sprout, Wheat, TrendingUp, LinkIcon, HandCoins, PiggyBank } from "lucide-react"
+import { Leaf, Sprout, Wheat, TrendingUp, LinkIcon, HandCoins, PiggyBank, Store } from "lucide-react"
 import Link from "next/link"
 
 interface Template2ServicesProps {
   services: Service[]
   pacsSlug: string
-  loanSchemesCount?: number // Added loan schemes count
-  depositSchemesCount?: number // Added deposit schemes count
+  loanSchemesCount?: number
+  depositSchemesCount?: number
 }
 
 const iconMap: Record<string, any> = {
@@ -144,6 +144,37 @@ export function Template2Services({
               </Card>
             </Link>
           )}
+
+          <Card
+            className="group hover:shadow-2xl transition-all duration-500 border-slate-200 hover:border-blue-400 h-full cursor-pointer transform hover:scale-105 hover:-rotate-1 animate-fade-in-scale"
+            style={{
+              animationDelay: `${(services.length + 2) * 0.1}s`,
+              perspective: "1000px",
+            }}
+          >
+            <CardContent className="p-6 space-y-4 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-amber-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+              <div className="relative z-10">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg group-hover:shadow-2xl">
+                  <Store className="h-7 w-7 text-white" />
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors duration-300">
+                  PDS Shops
+                </h3>
+
+                <p className="text-slate-600 line-clamp-3">
+                  Access essential commodities through our Public Distribution System shops at subsidized rates
+                </p>
+
+                <div className="flex items-center text-orange-600 font-medium text-sm group-hover:gap-2 transition-all duration-300">
+                  Learn more
+                  <LinkIcon className="h-4 w-4 ml-1 group-hover:translate-x-2 transition-transform duration-300" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

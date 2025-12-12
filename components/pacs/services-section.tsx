@@ -3,14 +3,14 @@
 import type React from "react"
 import type { PACSService } from "@/lib/types/pacs"
 import { Card, CardContent } from "@/components/ui/card"
-import { Banknote, Sprout, Truck, PiggyBank, ShoppingCart, Leaf, ArrowRight, HandCoins } from "lucide-react"
+import { Banknote, Sprout, Truck, PiggyBank, ShoppingCart, Leaf, ArrowRight, HandCoins, Store } from "lucide-react"
 import Link from "next/link"
 
 interface ServicesSectionProps {
   services: PACSService[]
   pacsSlug: string
   loanSchemesCount?: number
-  depositSchemesCount?: number // Added deposit schemes count prop
+  depositSchemesCount?: number
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -124,6 +124,28 @@ export function ServicesSection({
               </Card>
             </Link>
           )}
+
+          <Card className="border-green-100 hover:shadow-lg hover:border-green-300 transition-all duration-300 h-full cursor-pointer group">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-green-100 rounded-lg shrink-0 group-hover:bg-green-200 transition-colors">
+                  <Store className="h-6 w-6 text-green-700" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-green-900 mb-2 group-hover:text-green-700 transition-colors">
+                    PDS Shops
+                  </h3>
+                  <p className="text-sm text-muted-foreground text-pretty mb-3">
+                    Access essential commodities through our Public Distribution System shops at subsidized rates
+                  </p>
+                  <div className="flex items-center text-sm text-green-600 font-medium group-hover:text-green-700">
+                    Learn more
+                    <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

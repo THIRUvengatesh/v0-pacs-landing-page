@@ -1,15 +1,15 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { Sprout, TrendingUp, Users, Wallet, HandCoins, PiggyBank } from "lucide-react"
+import { Sprout, TrendingUp, Users, Wallet, HandCoins, PiggyBank, Store } from "lucide-react"
 import Link from "next/link"
 import type { Service } from "@/lib/types/pacs"
 
 interface Template3ServicesProps {
   services: Service[]
   pacsSlug: string
-  loanSchemesCount?: number // Added loan schemes count
-  depositSchemesCount?: number // Added deposit schemes count
+  loanSchemesCount?: number
+  depositSchemesCount?: number
 }
 
 const defaultIcons = [Sprout, TrendingUp, Users, Wallet]
@@ -115,6 +115,28 @@ export function Template3Services({
               </Card>
             </Link>
           )}
+
+          <Card className="group relative backdrop-blur-xl bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/50 overflow-hidden h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-amber-500/0 group-hover:from-orange-500/20 group-hover:to-amber-500/20 transition-all duration-500" />
+
+            <CardContent className="p-8 relative z-10">
+              <div className="mb-6 w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/50 group-hover:scale-110 transition-transform duration-500">
+                <Store className="text-white" size={32} />
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-orange-200 transition-colors">
+                PDS Shops
+              </h3>
+
+              <p className="text-purple-200 leading-relaxed line-clamp-3">
+                Access essential commodities through our Public Distribution System shops at subsidized rates
+              </p>
+
+              <div className="mt-6 text-orange-300 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
+                Learn More →
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>
