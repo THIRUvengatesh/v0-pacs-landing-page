@@ -28,6 +28,7 @@ export default async function ManagementTeamPage({ params }: { params: Promise<{
     .select("*")
     .eq("pacs_id", pacs.id)
     .eq("is_active", true)
+    .order("display_priority", { ascending: true })
     .order("display_order", { ascending: true })
 
   return <ManagementTeam pacs={pacs} teamMembers={teamMembers || []} />
