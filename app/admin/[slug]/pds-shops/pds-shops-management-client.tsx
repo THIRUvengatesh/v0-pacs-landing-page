@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
-import { Plus, Edit, Trash2, Store } from "lucide-react"
+import { Plus, Edit, Trash2, Store , Leaf, ArrowLeft} from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import Link from "next/link"
 
 interface PDSShop {
   id: string
@@ -176,8 +177,27 @@ export default function PDSShopsManagementClient({ pacsId, initialPDSShops }: PD
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
+      <header className="border-b border-green-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-4">
       <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+              <Link href={`/admin/${pacsId}`}>
+                <Button variant="ghost" size="sm" className="text-green-700 hover:bg-green-50">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              </Link>
+              <div className="flex items-center gap-2">
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <Leaf className="h-5 w-5 text-green-700" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-green-900">PDS Shops Management</h1>
+                  <p className="text-xs text-green-600">Manage Public Distribution System shops</p>
+                </div>
+              </div>
+            </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">PDS Shops Management</h2>
           <p className="text-muted-foreground mt-1">Manage Public Distribution System shops</p>
@@ -188,80 +208,7 @@ export default function PDSShopsManagementClient({ pacsId, initialPDSShops }: PD
         </Button>
       </div>
 
-      {pdsShops.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Store className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-muted-foreground">No PDS shops added yet. Click "Add PDS Shop" to get started.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6">
-          {pdsShops.map((shop) => (
-            <Card key={shop.id} className={!shop.is_active ? "opacity-60" : ""}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <Store className="h-5 w-5 text-orange-600" />
-                      {shop.shop_name}
-                      {shop.shop_code && (
-                        <span className="text-sm font-normal text-muted-foreground">({shop.shop_code})</span>
-                      )}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-2">{shop.address}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={shop.is_active} onCheckedChange={() => handleToggleActive(shop)} />
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(shop)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(shop.id)}>
-                      <Trash2 className="h-4 w-4 text-red-600" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {shop.contact_person && (
-                    <div>
-                      <span className="font-medium">Contact Person:</span> {shop.contact_person}
-                    </div>
-                  )}
-                  {shop.contact_phone && (
-                    <div>
-                      <span className="font-medium">Phone:</span> {shop.contact_phone}
-                    </div>
-                  )}
-                  {shop.operating_hours && (
-                    <div>
-                      <span className="font-medium">Operating Hours:</span> {shop.operating_hours}
-                    </div>
-                  )}
-                  {shop.license_number && (
-                    <div>
-                      <span className="font-medium">License:</span> {shop.license_number}
-                    </div>
-                  )}
-                </div>
-                {shop.commodities_available && shop.commodities_available.length > 0 && (
-                  <div className="mt-4">
-                    <span className="font-medium text-sm">Commodities:</span>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {shop.commodities_available.map((commodity, index) => (
-                        <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                          {commodity}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -406,6 +353,84 @@ export default function PDSShopsManagementClient({ pacsId, initialPDSShops }: PD
           </div>
         </DialogContent>
       </Dialog>
+      </div>
+      </header>
+      <main className="container mx-auto px-4 py-8">
+        {pdsShops.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Store className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-muted-foreground">No PDS shops added yet. Click "Add PDS Shop" to get started.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6">
+          {pdsShops.map((shop) => (
+            <Card key={shop.id} className={!shop.is_active ? "opacity-60" : ""}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Store className="h-5 w-5 text-orange-600" />
+                      {shop.shop_name}
+                      {shop.shop_code && (
+                        <span className="text-sm font-normal text-muted-foreground">({shop.shop_code})</span>
+                      )}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-2">{shop.address}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={shop.is_active} onCheckedChange={() => handleToggleActive(shop)} />
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(shop)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(shop.id)}>
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {shop.contact_person && (
+                    <div>
+                      <span className="font-medium">Contact Person:</span> {shop.contact_person}
+                    </div>
+                  )}
+                  {shop.contact_phone && (
+                    <div>
+                      <span className="font-medium">Phone:</span> {shop.contact_phone}
+                    </div>
+                  )}
+                  {shop.operating_hours && (
+                    <div>
+                      <span className="font-medium">Operating Hours:</span> {shop.operating_hours}
+                    </div>
+                  )}
+                  {shop.license_number && (
+                    <div>
+                      <span className="font-medium">License:</span> {shop.license_number}
+                    </div>
+                  )}
+                </div>
+                {shop.commodities_available && shop.commodities_available.length > 0 && (
+                  <div className="mt-4">
+                    <span className="font-medium text-sm">Commodities:</span>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {shop.commodities_available.map((commodity, index) => (
+                        <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                          {commodity}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      </main>
     </div>
   )
 }
