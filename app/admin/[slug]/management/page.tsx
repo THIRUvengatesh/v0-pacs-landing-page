@@ -23,5 +23,12 @@ export default async function ManagementTeamPage({ params }: { params: Promise<{
 
   if (!assignment) redirect("/admin")
 
-  return <ManagementTeam pacs={pacs} />
+  const { data: teamMembers } = await supabase
+    .from("pacs_team_members")
+    .select("*")
+    .eq("pacs_id", pacs.id)
+    .eq("is_active", true)
+    .order("display_order", { ascending: true })
+
+  return <ManagementTeam pacs={pacs} teamMembers={teamMembers || []} />
 }

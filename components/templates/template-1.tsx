@@ -13,10 +13,12 @@ import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 interface Template1Props {
   pacs: PACSWithRelations
   loanSchemes: LoanScheme[]
+  depositSchemes: any[] // Added depositSchemes prop
 }
 
-export function Template1({ pacs, loanSchemes }: Template1Props) {
+export function Template1({ pacs, loanSchemes, depositSchemes }: Template1Props) {
   const loanSchemesCount = loanSchemes.length
+  const depositSchemesCount = depositSchemes.length // Added deposit schemes count
 
   return (
     <main className="min-h-screen bg-white">
@@ -31,7 +33,7 @@ export function Template1({ pacs, loanSchemes }: Template1Props) {
                   services={pacs.services}
                   pacsSlug={pacs.slug}
                   loanSchemesCount={loanSchemesCount}
-                  loans={loanSchemes}
+                  depositSchemesCount={depositSchemesCount}
                 />
               </div>
             )}

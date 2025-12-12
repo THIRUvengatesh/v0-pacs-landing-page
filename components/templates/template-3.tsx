@@ -11,9 +11,10 @@ import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 interface Template3Props {
   pacs: PACSWithRelations
   loanSchemes: LoanScheme[]
+  depositSchemes: any[] // Added depositSchemes prop
 }
 
-export function Template3({ pacs, loanSchemes }: Template3Props) {
+export function Template3({ pacs, loanSchemes, depositSchemes }: Template3Props) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 relative overflow-hidden">
       {/* Animated background elements */}
@@ -30,7 +31,12 @@ export function Template3({ pacs, loanSchemes }: Template3Props) {
       </div>
 
       <Template3Hero pacs={pacs} />
-      <Template3Services services={pacs.services || []} pacsSlug={pacs.slug} />
+      <Template3Services
+        services={pacs.services || []}
+        pacsSlug={pacs.slug}
+        loanSchemesCount={loanSchemes.length}
+        depositSchemesCount={depositSchemes.length}
+      />
       {loanSchemes.length > 0 && <Template3Loans loans={loanSchemes} pacsSlug={pacs.slug} />}
       <Template3About pacs={pacs} />
       {pacs.machinery && pacs.machinery.length > 0 && <Template3Machinery machinery={pacs.machinery} />}

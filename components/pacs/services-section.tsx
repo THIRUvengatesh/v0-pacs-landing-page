@@ -10,6 +10,7 @@ interface ServicesSectionProps {
   services: PACSService[]
   pacsSlug: string
   loanSchemesCount?: number
+  depositSchemesCount?: number // Added deposit schemes count prop
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -21,7 +22,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Leaf,
 }
 
-export function ServicesSection({ services, pacsSlug, loanSchemesCount = 0 }: ServicesSectionProps) {
+export function ServicesSection({
+  services,
+  pacsSlug,
+  loanSchemesCount = 0,
+  depositSchemesCount = 0,
+}: ServicesSectionProps) {
   const getIcon = (iconName: string | null) => {
     if (!iconName) return Leaf
     return iconMap[iconName] || Leaf
@@ -80,6 +86,33 @@ export function ServicesSection({ services, pacsSlug, loanSchemesCount = 0 }: Se
                       <p className="text-sm text-muted-foreground text-pretty mb-3">
                         {loanSchemesCount} loan scheme{loanSchemesCount !== 1 ? "s" : ""} available with competitive
                         interest rates and flexible repayment options
+                      </p>
+                      <div className="flex items-center text-sm text-green-600 font-medium group-hover:text-green-700">
+                        View schemes
+                        <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+
+          {depositSchemesCount > 0 && (
+            <Link href={`/${pacsSlug}/deposits`}>
+              <Card className="border-green-100 hover:shadow-lg hover:border-green-300 transition-all duration-300 h-full cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-green-100 rounded-lg shrink-0 group-hover:bg-green-200 transition-colors">
+                      <PiggyBank className="h-6 w-6 text-green-700" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-green-900 mb-2 group-hover:text-green-700 transition-colors">
+                        Savings & Deposits
+                      </h3>
+                      <p className="text-sm text-muted-foreground text-pretty mb-3">
+                        {depositSchemesCount} deposit scheme{depositSchemesCount !== 1 ? "s" : ""} available with
+                        attractive interest rates and flexible terms
                       </p>
                       <div className="flex items-center text-sm text-green-600 font-medium group-hover:text-green-700">
                         View schemes

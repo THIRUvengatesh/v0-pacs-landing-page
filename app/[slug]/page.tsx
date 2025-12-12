@@ -34,7 +34,7 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
     notFound()
   }
 
-  const [servicesRes, machineryRes, galleryRes, loansRes] = await Promise.all([
+  const [servicesRes, machineryRes, galleryRes, loansRes, depositsRes] = await Promise.all([
     supabase
       .from("pacs_services")
       .select("*")
@@ -49,6 +49,12 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
       .eq("pacs_id", pacs.id)
       .eq("is_active", true)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("pacs_deposit_schemes")
+      .select("*")
+      .eq("pacs_id", pacs.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true }),
   ])
 
   const pacsData: PACSWithRelations = {
@@ -59,19 +65,20 @@ export default async function PACSPage({ params, searchParams }: PageProps) {
   }
 
   const loanSchemes = loansRes.data || []
+  const depositSchemes = depositsRes.data || []
 
   const templateType = preview ? Number.parseInt(preview) : pacs.template_type
 
   if (templateType === 3) {
-    return <Template3 pacs={pacsData} loanSchemes={loanSchemes} />
+    return <Template3 pacs={pacsData} loanSchemes={loanSchemes} depositSchemes={depositSchemes} />
   }
 
   if (templateType === 2) {
-    return <Template2 pacs={pacsData} loanSchemes={loanSchemes} />
+    return <Template2 pacs={pacsData} loanSchemes={loanSchemes} depositSchemes={depositSchemes} />
   }
 
   // Default to Template 1
-  return <Template1 pacs={pacsData} loanSchemes={loanSchemes} />
+  return <Template1 pacs={pacsData} loanSchemes={loanSchemes} depositSchemes={depositSchemes} />
 }
 
 // Generate metadata for SEO

@@ -11,13 +11,19 @@ import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 interface Template2Props {
   pacs: PACSWithRelations
   loanSchemes: LoanScheme[]
+  depositSchemes: any[] // Added depositSchemes prop
 }
 
-export function Template2({ pacs, loanSchemes }: Template2Props) {
+export function Template2({ pacs, loanSchemes, depositSchemes }: Template2Props) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <Template2Hero pacs={pacs} />
-      <Template2Services services={pacs.services || []} pacsSlug={pacs.slug} />
+      <Template2Services
+        services={pacs.services || []}
+        pacsSlug={pacs.slug}
+        loanSchemesCount={loanSchemes.length}
+        depositSchemesCount={depositSchemes.length}
+      />
       {loanSchemes.length > 0 && <Template2Loans loans={loanSchemes} pacsSlug={pacs.slug} />}
       <Template2About pacs={pacs} />
       {pacs.machinery && pacs.machinery.length > 0 && <Template2Machinery machinery={pacs.machinery} />}
