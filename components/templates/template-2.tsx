@@ -7,6 +7,7 @@ import { Template2Gallery } from "@/components/templates/template-2/gallery"
 import { Template2Contact } from "@/components/templates/template-2/contact"
 import { Template2Footer } from "@/components/templates/template-2/footer"
 import { Template2Management } from "@/components/templates/template-2/management"
+import { FloatingMemberButton } from "@/components/pacs/floating-member-button"
 import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 
 interface Template2Props {
@@ -43,6 +44,8 @@ export function Template2({
       {pacs.gallery && pacs.gallery.length > 0 && <Template2Gallery gallery={pacs.gallery} pacsName={pacs.name} />}
       <Template2Contact pacs={pacs} />
       <Template2Footer pacs={pacs} />
+
+      <FloatingMemberButton />
     </main>
   )
 }

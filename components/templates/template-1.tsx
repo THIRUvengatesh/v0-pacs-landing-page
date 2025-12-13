@@ -8,6 +8,7 @@ import { AboutSection } from "@/components/pacs/about-section"
 import { MapSection } from "@/components/pacs/map-section"
 import { CTASection } from "@/components/pacs/cta-section"
 import { Footer } from "@/components/pacs/footer"
+import { FloatingMemberButton } from "@/components/pacs/floating-member-button"
 import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 
 interface Template1Props {
@@ -71,6 +72,9 @@ export function Template1({
       <CTASection pacs={pacs} />
 
       <Footer pacs={pacs} />
+
+      {/* Added floating member button */}
+      <FloatingMemberButton />
     </main>
   )
 }

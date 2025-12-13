@@ -7,6 +7,7 @@ import { Template3Gallery } from "@/components/templates/template-3/gallery"
 import { Template3Contact } from "@/components/templates/template-3/contact"
 import { Template3Footer } from "@/components/templates/template-3/footer"
 import { Template3Management } from "@/components/templates/template-3/management"
+import { FloatingMemberButton } from "@/components/pacs/floating-member-button"
 import type { PACSWithRelations, LoanScheme } from "@/lib/types/pacs"
 
 interface Template3Props {
@@ -52,6 +53,8 @@ export function Template3({
       {pacs.gallery && pacs.gallery.length > 0 && <Template3Gallery gallery={pacs.gallery} pacsName={pacs.name} />}
       <Template3Contact pacs={pacs} />
       <Template3Footer pacs={pacs} />
+
+      <FloatingMemberButton />
     </main>
   )
 }
