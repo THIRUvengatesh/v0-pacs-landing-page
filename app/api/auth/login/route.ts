@@ -37,6 +37,8 @@ export async function POST(request: Request) {
       role: user.role,
     })
 
+    const redirectUrl = user.role === "super_admin" ? "/super-admin" : "/admin"
+
     return NextResponse.json({
       success: true,
       user: {
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
         fullName: user.full_name,
         role: user.role,
       },
-      redirectUrl: "/admin",
+      redirectUrl,
     })
   } catch (error) {
     console.error("Login error:", error)

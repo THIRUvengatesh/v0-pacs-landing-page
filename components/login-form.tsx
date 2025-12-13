@@ -26,7 +26,7 @@ const LoginForm = () => {
       const data = await response.json()
 
       if (response.ok) {
-        router.push("/admin")
+        router.push(data.redirectUrl || "/admin")
         router.refresh()
       } else {
         setError(data.error || "Login failed")
