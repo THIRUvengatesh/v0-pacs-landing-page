@@ -40,13 +40,13 @@ export default async function Home() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full mb-6">
             <Leaf className="h-4 w-4" />
-            <span className="text-sm font-medium">Primary Agricultural Cooperative Societies</span>
+            <span className="text-sm font-medium">Erode Primary Agricultural Cooperative Societies</span>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-green-900 mb-6 text-balance">
             Empowering Farmers, Strengthening Communities
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-balance">
-            Find your local PACS and access essential agricultural services, financial support, and community resources
+            Find your local PACS in Erode and access essential agricultural services, financial support, and community resources
           </p>
         </div>
       </section>
