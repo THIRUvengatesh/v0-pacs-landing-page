@@ -6,7 +6,7 @@ export default async function SuperAdminPage() {
   const session = await getSession()
 
   if (!session || session.role !== "super_admin") {
-    redirect("/login")
+    redirect("/auth/login")
   }
 
   return <SuperAdminDashboard />

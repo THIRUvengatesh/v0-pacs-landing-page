@@ -36,7 +36,8 @@ export default function LoginPage() {
       }
 
       // Redirect to admin dashboard
-      router.push("/admin")
+      //router.push("/admin")
+      router.push(data.redirectUrl)
       router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")

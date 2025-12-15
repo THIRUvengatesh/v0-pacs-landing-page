@@ -2,7 +2,9 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/router"
+//import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
+import { log } from "console"
 
 const LoginForm = () => {
   const [email, setEmail] = useState("")
@@ -24,9 +26,9 @@ const LoginForm = () => {
       })
 
       const data = await response.json()
-
+      console.log("Login response data:", data);
       if (response.ok) {
-        router.push(data.redirectUrl || "/admin")
+        router.push(data.redirectUrl)
         router.refresh()
       } else {
         setError(data.error || "Login failed")
