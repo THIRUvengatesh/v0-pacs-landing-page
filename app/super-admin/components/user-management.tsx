@@ -34,6 +34,7 @@ export default function UserManagement({ onUpdate }: { onUpdate: () => void }) {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+  const [resettingUserId, setResettingUserId] = useState<string | null>(null)
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -179,6 +180,42 @@ export default function UserManagement({ onUpdate }: { onUpdate: () => void }) {
     }
   }
 
+  const handleResetUserPassword = async (userId: string, userEmail: string) => {
+    if (!confirm(`Are you sure you want to reset the password for ${userEmail} to 'password123'?`)) {
+      return
+    }
+
+    setResettingUserId(userId)
+    try {
+      const response = await fetch(`/api/super-admin/users/${userId}/reset-password`, {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast({
+          title: "Success",
+          description: data.message || "Password has been reset to 'password123'",
+        })
+      } else {
+        const data = await response.json()
+        toast({
+          title: "Error",
+          description: data.error || "Failed to reset password",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while resetting password",
+        variant: "destructive",
+      })
+    } finally {
+      setResettingUserId(null)
+    }
+  }
+
   const resetForm = () => {
     setFormData({
       email: "",
@@ -242,6 +279,15 @@ export default function UserManagement({ onUpdate }: { onUpdate: () => void }) {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleResetUserPassword(user.id, user.email)}
+                      disabled={resettingUserId === user.id}
+                      title="Reset password"
+                    >
+                      <KeyRound className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(user)}>
                       <Edit className="h-4 w-4" />
                     </Button>
