@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createSession } from "@/lib/auth/session"
 import { NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
 
 export async function POST(request: Request) {
   try {
@@ -14,47 +15,41 @@ export async function POST(request: Request) {
 
     const supabase = await createClient()
 
-    const { data: userCheck, error: checkError } = await supabase
+    const { data: user, error: userError } = await supabase
       .from("users")
-      .select("id, email, is_active, role")
+      .select("id, email, password, full_name, role, is_active")
       .eq("email", email)
-      .single()
+      .maybeSingle()
 
-    console.log("[v0] User check result:", userCheck, "Error:", checkError)
+    console.log(
+      "[v0] User check result:",
+      user ? { id: user.id, email: user.email, role: user.role, is_active: user.is_active } : null,
+      "Error:",
+      userError,
+    )
 
-    if (checkError || !userCheck) {
+    if (userError || user === null) {
       console.log("[v0] User not found:", email)
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
 
-    if (!userCheck.is_active) {
+    if (!user.is_active) {
       console.log("[v0] User is not active:", email)
       return NextResponse.json({ error: "Account is not active" }, { status: 401 })
     }
 
-    // Call the verify_password function
-    const { data, error } = await supabase.rpc("verify_password", {
-      email_input: email,
-      password_input: password,
-    })
+    const isPasswordValid = await bcrypt.compare(password, user.password)
 
-    console.log("[v0] verify_password result:", data, "Error:", error)
+    console.log("[v0] Password verification result:", isPasswordValid)
 
-    if (error) {
-      console.error("[v0] Login error:", error)
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
-    }
-
-    if (!data || data.length === 0) {
+    if (!isPasswordValid) {
       console.log("[v0] Password verification failed for:", email)
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
 
-    const user = data[0]
-
     // Create session
     await createSession({
-      userId: user.user_id,
+      userId: user.id,
       email: user.email,
       fullName: user.full_name,
       role: user.role,
@@ -66,7 +61,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       user: {
-        id: user.user_id,
+        id: user.id,
         email: user.email,
         fullName: user.full_name,
         role: user.role,

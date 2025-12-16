@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Plus, Edit, Trash2, KeyRound } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface User {
@@ -33,6 +33,7 @@ export default function UserManagement({ onUpdate }: { onUpdate: () => void }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -142,6 +143,42 @@ export default function UserManagement({ onUpdate }: { onUpdate: () => void }) {
     }
   }
 
+  const handleResetAllPasswords = async () => {
+    if (!confirm("Are you sure you want to reset all user passwords to 'password123'? This action cannot be undone.")) {
+      return
+    }
+
+    setIsResetting(true)
+    try {
+      const response = await fetch("/api/super-admin/reset-passwords", {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast({
+          title: "Success",
+          description: data.message || "All passwords have been reset to 'password123'",
+        })
+      } else {
+        const data = await response.json()
+        toast({
+          title: "Error",
+          description: data.error || "Failed to reset passwords",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while resetting passwords",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
   const resetForm = () => {
     setFormData({
       email: "",
@@ -156,16 +193,27 @@ export default function UserManagement({ onUpdate }: { onUpdate: () => void }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">User Management</h3>
-        <Button
-          onClick={() => {
-            resetForm()
-            setIsDialogOpen(true)
-          }}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add New User
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleResetAllPasswords}
+            variant="outline"
+            className="gap-2 bg-transparent"
+            disabled={isResetting}
+          >
+            <KeyRound className="h-4 w-4" />
+            {isResetting ? "Resetting..." : "Reset All Passwords"}
+          </Button>
+          <Button
+            onClick={() => {
+              resetForm()
+              setIsDialogOpen(true)
+            }}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add New User
+          </Button>
+        </div>
       </div>
 
       <div className="border rounded-lg">
